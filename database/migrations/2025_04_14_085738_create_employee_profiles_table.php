@@ -22,6 +22,7 @@ class CreateEmployeeProfilesTable extends Migration
             // Basic Info
             $table->string('employee_id')->unique();
             $table->string('employee_name');
+            $table->string('employee_email')->unique();
             $table->string('employee_phone_number');
             $table->string('employee_phone_number2')->nullable();
             $table->string('father_name')->nullable();

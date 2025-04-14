@@ -13,6 +13,7 @@ class EmployeeProfile extends Model
         'user_id',
         'employee_id',
         'employee_name',
+        'employee_email',
         'employee_phone_number',
         'employee_phone_number2',
         'gender',

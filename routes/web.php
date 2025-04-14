@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\Usercontroller;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PermissionsController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/users', [Usercontroller::class, 'index'])->name('users.index');
     Route::post('/users', [Usercontroller::class, 'store'])->name('users.store');
     Route::put('/users/{id}', [Usercontroller::class, 'update'])->name('users.update');
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+    Route::post('/employees/create', [EmployeeController::class, 'create'])->name('employees.create');
 
 });
 

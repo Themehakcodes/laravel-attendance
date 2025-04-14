@@ -17,11 +17,11 @@
                         </a>
                     </li>
                     <li class="breadcrumb-item"><a href="#">Admin</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Roles List</li>
+                    <li class="breadcrumb-item active" aria-current="page">Employees List</li>
                 </ol>
             </nav>
-            <h2 class="h4">Roles List</h2>
-            <p class="mb-0">Manage Roles</p>
+            <h2 class="h4">Employees List</h2>
+            <p class="mb-0">Manage Employees</p>
         </div>
         <div class="btn-toolbar mb-2 mb-md-0">
             <button type="button" class="btn btn-sm btn-gray-800" data-bs-toggle="modal" data-bs-target="#roleModal">
@@ -30,7 +30,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
                     </path>
                 </svg>
-                New Role
+                New Employee
             </button>
             <div class="btn-group ms-2 ms-lg-3">
                 <button type="button" class="btn btn-sm btn-outline-gray-600">Share</button>
