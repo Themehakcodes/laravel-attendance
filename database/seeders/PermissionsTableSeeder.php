@@ -12,11 +12,12 @@ class PermissionsTableSeeder extends Seeder
         $modules = [
             'dashboard_management',
             'user_management',
+            'management',
             'role_management',
             'permission_management',
         ];
 
-        $actions = ['create', 'read', 'update', 'delete'];
+        $actions = ['create', 'read', 'update'];
 
         foreach ($modules as $module) {
             foreach ($actions as $action) {

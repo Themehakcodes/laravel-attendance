@@ -93,7 +93,8 @@
                                                     <!-- Role Description -->
                                                     <div class="mb-3">
                                                         <label for="description" class="form-label">Description
-                                                            (optional)</label>
+                                                            (optional)
+                                                        </label>
                                                         <textarea class="form-control" name="description" id="description" rows="3"
                                                             placeholder="Enter description (optional)">{{ old('description', $role->description) }}</textarea>
                                                     </div>
@@ -129,6 +130,14 @@
                                                                     <!-- Display Permissions in a Single Row -->
                                                                     <div class="d-flex">
                                                                         @foreach ($permissionsList as $permission)
+                                                                            @php
+                                                                                // Split the permission title into words and get the last word
+                                                                                $permissionTitleParts = explode(
+                                                                                    ' ',
+                                                                                    $permission->permission_title,
+                                                                                );
+                                                                                $lastWord = end($permissionTitleParts);
+                                                                            @endphp
                                                                             <div class="form-check me-3">
                                                                                 <input class="form-check-input"
                                                                                     type="checkbox" name="permissions[]"
@@ -137,13 +146,14 @@
                                                                                     {{ in_array($permission->id, $role->permissions->pluck('id')->toArray()) ? 'checked' : '' }}>
                                                                                 <label class="form-check-label"
                                                                                     for="permission_{{ $permission->id }}">
-                                                                                    {{ ucwords(str_replace('_', ' ', $permission->permission_title)) }}
+                                                                                    {{ ucwords($lastWord) }}
                                                                                 </label>
                                                                             </div>
                                                                         @endforeach
                                                                     </div>
                                                                 </div>
                                                             @endforeach
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -209,42 +219,46 @@
                                 <div class="form-group">
                                     <label class="form-label">Permissions</label>
                                     <div class="permissions" style="max-height: 300px; overflow-y: auto;">
-                                        <!-- Iterate over each permission group -->
-                                        @php
-                                            // Group permissions based on their prefix (e.g., User_Management)
-                                            $groupedPermissions = [];
-                                            foreach ($permissions as $permission) {
-                                                // Extract the base name (e.g., User_Management)
-                                                $groupName = explode('_', $permission->permission_title)[0];
+                                      <!-- Iterate over each permission group -->
+@php
+// Group permissions based on their prefix (e.g., User_Management)
+$groupedPermissions = [];
+foreach ($permissions as $permission) {
+    // Extract the base name (e.g., User_Management)
+    $groupName = explode('_', $permission->permission_title)[0];
 
-                                                // Add the permission to the grouped array
-                                                if (!isset($groupedPermissions[$groupName])) {
-                                                    $groupedPermissions[$groupName] = [];
-                                                }
-                                                $groupedPermissions[$groupName][] = $permission;
-                                            }
-                                        @endphp
+    // Add the permission to the grouped array
+    if (!isset($groupedPermissions[$groupName])) {
+        $groupedPermissions[$groupName] = [];
+    }
+    $groupedPermissions[$groupName][] = $permission;
+}
+@endphp
 
-                                        @foreach ($groupedPermissions as $groupName => $permissionsList)
-                                            <div class="permission-group mb-3">
-                                                <h5>{{ ucwords(str_replace('_', ' ', $groupName)) }}</h5>
+@foreach ($groupedPermissions as $groupName => $permissionsList)
+<div class="permission-group mb-3">
+    <h5>{{ ucwords(str_replace('_', ' ', $groupName)) }}</h5>
 
-                                                <!-- Display Permissions in a Single Row -->
-                                                <div class="d-flex">
-                                                    @foreach ($permissionsList as $permission)
-                                                        <div class="form-check me-3">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                name="permissions[]" value="{{ $permission->id }}"
-                                                                id="permission_{{ $permission->id }}">
-                                                            <label class="form-check-label"
-                                                                for="permission_{{ $permission->id }}">
-                                                                {{ ucwords(str_replace('_', ' ', $permission->permission_title)) }}
-                                                            </label>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        @endforeach
+    <!-- Display Permissions in a Single Row -->
+    <div class="d-flex">
+        @foreach ($permissionsList as $permission)
+            @php
+                // Split the permission title into words and get the last word
+                $permissionTitleParts = explode(' ', $permission->permission_title);
+                $lastWord = end($permissionTitleParts);
+            @endphp
+            <div class="form-check me-3">
+                <input class="form-check-input" type="checkbox" name="permissions[]"
+                    value="{{ $permission->id }}" id="permission_{{ $permission->id }}">
+                <label class="form-check-label" for="permission_{{ $permission->id }}">
+                    {{ ucwords($lastWord) }}
+                </label>
+            </div>
+        @endforeach
+    </div>
+</div>
+@endforeach
+
                                     </div>
                                 </div>
                             </div>
