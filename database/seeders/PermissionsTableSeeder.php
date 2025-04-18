@@ -11,6 +11,7 @@ class PermissionsTableSeeder extends Seeder
     {
         $modules = [
             'dashboard_management',
+            'employee_management',
             'user_management',
             'management',
             'role_management',

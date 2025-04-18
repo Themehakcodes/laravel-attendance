@@ -26,6 +26,58 @@ class EmployeeController extends Controller
         return view('admin.pages.employees.create');
     }
 
+    public function edit($id)
+    {
+        // Fetch the employee profile by ID
+        $employee = EmployeeProfile::findOrFail($id);
+
+        // Return the view to edit the employee
+        return view('admin.pages.employees.edit', compact('employee'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $employee = EmployeeProfile::findOrFail($id);
+
+        $validated = $request->validate([
+            'employee_name' => 'required|string|max:255',
+            'employee_phone_number' => 'required',
+            'employee_email' => 'required|email',
+            'gender' => 'required',
+            'marital_status' => 'required',
+            'employee_dob' => 'required|date',
+            'employee_address' => 'required',
+            'employee_state' => 'required',
+            'district' => 'required',
+            'city' => 'required',
+            'pincode' => 'required',
+            'job_title' => 'nullable|string',
+            'department' => 'nullable|string',
+            'salary' => 'nullable|numeric',
+            'joining_date' => 'required|date',
+            'employee_status' => 'required',
+            'staff_status' => 'required',
+            'aadhaar_photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image|max:2048',
+        ]);
+
+        // Handle files
+        if ($request->hasFile('aadhaar_photo')) {
+            $aadhaarPath = $request->file('aadhaar_photo')->store('aadhaar_photos', 'public');
+            $validated['aadhaar_photo'] = $aadhaarPath;
+        }
+
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('profile_photos', 'public');
+            $validated['photo'] = $photoPath;
+        }
+
+        $employee->update($validated);
+
+        return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
+    }
+
+
 
 
     public function store(Request $request)
@@ -141,5 +193,16 @@ class EmployeeController extends Controller
     }
 
 
+
+    //Employee Deactivate
+
+    public function updatestatus(Request $request, $id)
+    {
+        $employee = EmployeeProfile::findOrFail($id);
+        $employee->staff_status = $request->input('staff_status');
+        $employee->save();
+
+        return redirect()->route('employees.index')->with('success', 'Employee status updated successfully!');
+    }
 
 }

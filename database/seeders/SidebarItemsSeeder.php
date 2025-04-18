@@ -70,6 +70,18 @@ class SidebarItemsSeeder extends Seeder
                 'created_at' => '2025-04-14 09:28:41',
                 'updated_at' => '2025-04-14 09:28:41',
                 'deleted_at' => NULL,
+            ],
+            [
+                'id' => 6,
+                'item_name' => 'Employees',
+                'item_route' => '/employees',
+                'item_icon' => 'fas fa-users',
+                'permission_title' => 'employee_management_read',
+                'item_order' => 1,
+                'item_parent_id' => 0,
+                'created_at' => '2025-04-14 09:28:41',
+                'updated_at' => '2025-04-14 09:28:41',
+                'deleted_at' => NULL,
             ]
         ];
 
