@@ -2,21 +2,60 @@
 @section('title', 'Employee Profile')
 
 @section('admincontent')
+
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+
+
         <div class="card card-body border-0 shadow mb-4">
+
+
+        {{-- Validation Errors --}}
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <strong>Whoops! Something went wrong:</strong>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- Session Success Message --}}
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    {{-- Session Error Message --}}
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
+
             <h2 class="h5 mb-4">Employee Information</h2>
-            <form action="" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <!-- Employee ID -->
-                    <div class="col-md-6 mb-3">
+                    {{-- <div class="col-md-6 mb-3">
                         <label for="employee_id">Employee ID</label>
                         <input class="form-control" id="employee_id" name="employee_id" type="text" placeholder="Enter Employee ID" required>
-                    </div>
+                    </div> --}}
                     <!-- Employee Name -->
                     <div class="col-md-6 mb-3">
                         <label for="employee_name">Employee Name</label>
-                        <input class="form-control" id="employee_name" name="employee_name" type="text" placeholder="Enter Employee Name" required>
+                        <input class="form-control" id="employee_name" name="employee_name" type="text"
+                            placeholder="Enter Employee Name" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="employee_phone_number2">Secondary Phone Number</label>
+                        <input class="form-control" id="employee_phone_number2" name="employee_phone_number2" type="text"
+                            placeholder="Enter Secondary Phone Number (Optional)">
                     </div>
                 </div>
 
@@ -24,12 +63,18 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="employee_phone_number">Phone Number</label>
-                        <input class="form-control" id="employee_phone_number" name="employee_phone_number" type="text" placeholder="Enter Phone Number" required>
+                        <input class="form-control" id="employee_phone_number" name="employee_phone_number" type="text"
+                            placeholder="Enter Phone Number" required>
                     </div>
+
                     <div class="col-md-6 mb-3">
-                        <label for="employee_phone_number2">Secondary Phone Number</label>
-                        <input class="form-control" id="employee_phone_number2" name="employee_phone_number2" type="text" placeholder="Enter Secondary Phone Number (Optional)">
+                        <label for="employee_phone_number">Email</label>
+                        <input class="form-control" id="employee_emaiil_id" name="employee_email" type="email"
+                            placeholder="Enter Email Id @" required>
                     </div>
+
+
+
                 </div>
 
                 <!-- Gender & Marital Status -->
@@ -42,6 +87,7 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
+
                     <div class="col-md-6 mb-3">
                         <label for="marital_status">Marital Status</label>
                         <select class="form-select" id="marital_status" name="marital_status">
@@ -66,31 +112,37 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="employee_address">Address</label>
-                        <input class="form-control" id="employee_address" name="employee_address" type="text" placeholder="Enter your home address" required>
+                        <input class="form-control" id="employee_address" name="employee_address" type="text"
+                            placeholder="Enter your home address" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="employee_state">State</label>
-                        <input class="form-control" id="employee_state" name="employee_state" type="text" placeholder="Enter State" required>
+                        <input class="form-control" id="employee_state" name="employee_state" type="text"
+                            placeholder="Enter State" required>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="district">District</label>
-                        <input class="form-control" id="district" name="district" type="text" placeholder="Enter District" required>
+                        <input class="form-control" id="district" name="district" type="text"
+                            placeholder="Enter District" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="city">City</label>
-                        <input class="form-control" id="city" name="city" type="text" placeholder="Enter City" required>
+                        <input class="form-control" id="city" name="city" type="text" placeholder="Enter City"
+                            required>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="pincode">Pincode</label>
-                        <input class="form-control" id="pincode" name="pincode" type="text" placeholder="Enter Pincode" required>
+                        <input class="form-control" id="pincode" name="pincode" type="text" placeholder="Enter Pincode"
+                            required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="permanent_address">Permanent Address</label>
-                        <input class="form-control" id="permanent_address" name="permanent_address" type="text" placeholder="Permanent Address (Optional)">
+                        <input class="form-control" id="permanent_address" name="permanent_address" type="text"
+                            placeholder="Permanent Address (Optional)">
                     </div>
                 </div>
 
@@ -99,17 +151,20 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="job_title">Job Title</label>
-                        <input class="form-control" id="job_title" name="job_title" type="text" placeholder="Enter Job Title">
+                        <input class="form-control" id="job_title" name="job_title" type="text"
+                            placeholder="Enter Job Title">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="department">Department</label>
-                        <input class="form-control" id="department" name="department" type="text" placeholder="Enter Department">
+                        <input class="form-control" id="department" name="department" type="text"
+                            placeholder="Enter Department">
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="salary">Salary</label>
-                        <input class="form-control" id="salary" name="salary" type="number" placeholder="Enter Salary">
+                        <input class="form-control" id="salary" name="salary" type="number"
+                            placeholder="Enter Salary">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="joining_date">Joining Date</label>
@@ -137,15 +192,27 @@
 
                 <!-- Documents -->
                 <div class="row">
+                    {{-- Aadhaar Photo --}}
                     <div class="col-md-6 mb-3">
                         <label for="aadhaar_photo">Aadhaar Photo</label>
-                        <input class="form-control" id="aadhaar_photo" name="aadhaar_photo" type="file">
+                        <input class="form-control" id="aadhaar_photo" name="aadhaar_photo" type="file" accept="image/*" onchange="previewImage(this, 'aadhaar_preview', 'aadhaar_clear_btn')">
+                        <div class="mt-2 position-relative d-none" id="aadhaar_preview_wrapper">
+                            <img id="aadhaar_preview" src="" alt="Aadhaar Preview" class="img-thumbnail" style="max-height: 150px;">
+                            <button type="button" class="btn-close position-absolute top-0 end-0" id="aadhaar_clear_btn" onclick="clearImage('aadhaar_photo', 'aadhaar_preview_wrapper')"></button>
+                        </div>
                     </div>
+
+                    {{-- Profile Photo --}}
                     <div class="col-md-6 mb-3">
                         <label for="photo">Profile Photo</label>
-                        <input class="form-control" id="photo" name="photo" type="file">
+                        <input class="form-control" id="photo" name="photo" type="file" accept="image/*" onchange="previewImage(this, 'profile_preview', 'profile_clear_btn')">
+                        <div class="mt-2 position-relative d-none" id="profile_preview_wrapper">
+                            <img id="profile_preview" src="" alt="Profile Preview" class="img-thumbnail" style="max-height: 150px;">
+                            <button type="button" class="btn-close position-absolute top-0 end-0" id="profile_clear_btn" onclick="clearImage('photo', 'profile_preview_wrapper')"></button>
+                        </div>
                     </div>
                 </div>
+
 
                 <!-- Submit Button -->
                 <div class="mt-3">
@@ -178,5 +245,31 @@
             });
         @endif
     </script>
+
+
+<script>
+function previewImage(input, previewId, clearBtnId) {
+    const preview = document.getElementById(previewId);
+    const wrapper = preview.closest('.position-relative');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            wrapper.classList.remove('d-none');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function clearImage(inputId, wrapperId) {
+    const input = document.getElementById(inputId);
+    const wrapper = document.getElementById(wrapperId);
+    input.value = '';
+    wrapper.classList.add('d-none');
+}
+</script>
+
+
 
 @endsection

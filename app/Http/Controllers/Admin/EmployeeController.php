@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeProfile;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Role;
+use Illuminate\Support\Facades\Hash;
 
 class EmployeeController extends Controller
 {
@@ -27,11 +30,10 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
-        // Validate the incoming request data for employee profile and user
+        // Basic validation except email uniqueness (we'll handle it manually)
         $request->validate([
-            'employee_id' => 'required|string|max:255',
             'employee_name' => 'required|string|max:255',
-            'employee_email' => 'required|email|max:255|unique:users,email',
+            'employee_email' => 'required|email|max:255',
             'employee_phone_number' => 'required|string|max:20',
             'employee_phone_number2' => 'nullable|string|max:20',
             'gender' => 'required|string|in:male,female,other',
@@ -49,42 +51,58 @@ class EmployeeController extends Controller
             'joining_date' => 'required|date',
             'employee_status' => 'required|string|in:full_day,part_time',
             'staff_status' => 'required|string|in:active,inactive',
-            'aadhaar_photo' => 'nullable|image|max:10240', // Max file size 10MB
-            'photo' => 'nullable|image|max:10240', // Max file size 10MB
+            'aadhaar_photo' => 'nullable|image|max:10240',
+            'photo' => 'nullable|image|max:10240',
         ]);
 
-        // Check if the "employee" role exists; if not, create it
+        // Check if the employee role exists
         $role = Role::firstOrCreate(['role_name' => 'employee'], ['description' => 'Employee Role']);
 
-        // Create the User (using dob as the password)
-        $user = User::create([
-            'user_id' => $this->generateUserId($request->employee_name),
-            'name' => $request->employee_name,
-            'email' => $request->employee_email, // Assuming email is employee_name@example.com
-            'password' => bcrypt($request->employee_name), // Password set as employee DOB
-            'role_id' => $role->id, // Assign the "employee" role
-            'user_status' => 'active', // Assuming all new users are active
-        ]);
+        // Check if a user with this email already exists
+        $user = User::where('email', $request->employee_email)->first();
 
-        // Handle file uploads for Aadhaar photo and profile photo
-        $aadhaarPhotoPath = $request->hasFile('aadhaar_photo') ? $request->file('aadhaar_photo')->store('aadhaar_photos', 'public') : null;
-        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('profile_photos', 'public') : null;
+        if ($user) {
+            // Check if EmployeeProfile already exists for this user
+            $existingProfile = EmployeeProfile::where('user_id', $user->id)->first();
 
-        // Clean up the name and get the first 4 characters in uppercase
-        $cleanName = preg_replace('/\s+/', '', $request->employee_name);
-        $prefix = strtoupper(substr($cleanName, 0, 4));
+            if ($existingProfile) {
+                return redirect()->back()->with('error', 'This email is already registered and assigned to an employee.');
+            }
 
-        // Generate a random 4-digit number for employee_id
-        $randomDigits = rand(1000, 9999);
-        $employee_id = $prefix . $randomDigits;
+            // User exists but no profile, proceed to create profile
+        } else {
+            // Create new user
+            $user = User::create([
+                'user_id' => $this->generateUserId($request->employee_name),
+                'name' => $request->employee_name,
+                'email' => $request->employee_email,
+                'password' => bcrypt($request->employee_dob), // Set DOB as password
+                'role_id' => $role->id,
+                'user_status' => 'active',
+            ]);
+        }
 
-        // Create the EmployeeProfile entry
-        $employeeProfile = EmployeeProfile::create([
-            'user_id' => $user->id, // Link the newly created user
+        // Handle file uploads
+        $aadhaarPhotoPath = $request->hasFile('aadhaar_photo')
+            ? $request->file('aadhaar_photo')->store('aadhaar_photos', 'public')
+            : null;
+
+        $photoPath = $request->hasFile('photo')
+            ? $request->file('photo')->store('profile_photos', 'public')
+            : null;
+
+        // Generate Employee ID
+        $prefix = strtoupper(substr(preg_replace('/\s+/', '', $request->employee_name), 0, 4));
+        $employee_id = $prefix . rand(1000, 9999);
+
+        // Create profile
+        EmployeeProfile::create([
+            'user_id' => $user->id,
             'employee_id' => $employee_id,
             'employee_name' => $request->employee_name,
             'employee_phone_number' => $request->employee_phone_number,
             'employee_phone_number2' => $request->employee_phone_number2,
+            'employee_email' => $request->employee_email,
             'gender' => $request->gender,
             'marital_status' => $request->marital_status,
             'employee_dob' => $request->employee_dob,
@@ -104,7 +122,6 @@ class EmployeeController extends Controller
             'photo' => $photoPath,
         ]);
 
-        // Redirect back with success message
         return redirect()->back()->with('success', 'Employee profile saved successfully.');
     }
 

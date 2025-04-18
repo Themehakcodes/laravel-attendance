@@ -44,7 +44,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/users', [Usercontroller::class, 'store'])->name('users.store');
     Route::put('/users/{id}', [Usercontroller::class, 'update'])->name('users.update');
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
-    Route::post('/employees/create', [EmployeeController::class, 'create'])->name('employees.create');
+    Route::get('/employees/create', [EmployeeController::class, 'create'])->name('employees.create');
+    Route::post('/employees/store', [EmployeeController::class, 'store'])->name('employees.store');
 
 });
 
