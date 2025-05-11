@@ -61,4 +61,11 @@ public function role()
     {
         return $this->permissions()->contains('permission_title', $permissionTitle);
     }
+
+    /**
+     * Check For The Emplyee Profile
+     */
+    public function employeeProfile(){
+        return $this->hasOne(EmployeeProfile::class, 'user_id', 'id');
+    }
 }

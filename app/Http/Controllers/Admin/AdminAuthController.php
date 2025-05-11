@@ -37,6 +37,7 @@ public function login(Request $request)
 
         // If the user is active, proceed to the dashboard
         return redirect()->intended(route('dashboard'));
+
     }
 
     return back()->with('error', 'Invalid credentials.');

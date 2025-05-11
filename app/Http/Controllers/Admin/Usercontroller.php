@@ -54,6 +54,33 @@ class Usercontroller extends Controller
    }
 
 
+    public function update(Request $request, $id)
+    {
+         $request->validate([
+              'name' => 'required|string|max:255',
+              'email' => 'required|email|unique:users,email,' . $id,
+              'role_id' => 'required|exists:roles,id',
+              'user_status' => 'required|in:active,deactivated,hold',
+         ]);
+
+         // Check if the role exists
+         $role = Role::find($request->role_id);
+         if (!$role) {
+              return redirect()->back()->with('error', 'Role not found.');
+         }
+
+         // Update the user
+         $user = User::findOrFail($id);
+         $user->update([
+              'name' => $request->name,
+              'email' => $request->email,
+              'role_id' => $request->role_id,
+              'user_status' => $request->user_status,
+         ]);
+
+         return redirect()->back()->with('success', 'User updated successfully.');
+    }
+
 
 
 
