@@ -107,7 +107,7 @@ class EmployeeController extends Controller
             'photo' => 'nullable|image|max:10240',
         ]);
 
-        dd($request);
+     
 
         // Check if the employee role exists
         $role = Role::firstOrCreate(['role_name' => 'employee'], ['description' => 'Employee Role']);
