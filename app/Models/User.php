@@ -16,7 +16,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role_id', // Include this if user has a role_id column
+        'role_id',
     ];
 
     protected $hidden = [
@@ -30,18 +30,12 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the role of the user.
+     * Get the role of the user (one-to-one).
      */
-    // In User model
-public function roles()
-{
-    return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
-}
-   // In the User model
-public function role()
-{
-    return $this->belongsTo(Role::class); // One role for the user
-}
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 
     /**
      * Get all permissions from the user's role.
@@ -53,9 +47,8 @@ public function role()
             : collect();
     }
 
-
     /**
-     * Check if user has a specific permission (optional utility).
+     * Check if user has a specific permission.
      */
     public function hasPermission($permissionTitle)
     {
@@ -63,9 +56,10 @@ public function role()
     }
 
     /**
-     * Check For The Emplyee Profile
+     * Get the employee profile associated with the user.
      */
-    public function employeeProfile(){
+    public function employeeProfile()
+    {
         return $this->hasOne(EmployeeProfile::class, 'user_id', 'id');
     }
 }

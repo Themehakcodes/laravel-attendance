@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\RolesController;
-
+use App\Http\Controllers\Admin\AttendanceMarker;
 use App\Http\Controllers\Admin\Usercontroller;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PermissionsController;
@@ -59,6 +59,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('employees.update');
     Route::patch('/employees/{id}/status', [EmployeeController::class, 'updatestatus'])->name('employees.updatestatus');
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
+    Route::get('/attendance/calandar', [AttendanceMarker::class, 'calendar'])->name('attendance.calendar');
+    Route::post('/attendance/mark', [AttendanceMarker::class, 'mark'])->name('attendance.mark');
 
 
 
