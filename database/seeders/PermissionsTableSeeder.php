@@ -16,6 +16,8 @@ class PermissionsTableSeeder extends Seeder
             'management',
             'role_management',
             'permission_management',
+            'attendance_management',
+            
         ];
 
         $actions = ['create', 'read', 'update'];

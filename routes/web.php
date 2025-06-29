@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\AttendanceMarker;
 use App\Http\Controllers\Admin\Usercontroller;
+use App\Http\Controllers\Admin\EmployeeExpenseController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PermissionsController;
 
@@ -60,7 +61,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/employees/{id}/status', [EmployeeController::class, 'updatestatus'])->name('employees.updatestatus');
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
     Route::get('/attendance/calandar', [AttendanceMarker::class, 'calendar'])->name('attendance.calendar');
+Route::get('/attendance', [AttendanceMarker::class, 'index'])->name('attendance.index');
     Route::post('/attendance/mark', [AttendanceMarker::class, 'mark'])->name('attendance.mark');
+        Route::get('/expenses', [EmployeeExpenseController::class, 'index'])->name('expenses.index');
+    Route::post('/expenses', [EmployeeExpenseController::class, 'store'])->name('expenses.store');
+    Route::put('/expenses/{expense}', [EmployeeExpenseController::class, 'update'])->name('expenses.update');
+    Route::patch('/expenses/{id}/mark-paid', [EmployeeExpenseController::class, 'markAsPaid'])->name('expenses.markAsPaid');
+
 
 
 

@@ -82,7 +82,9 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="employee_dob">Date of Birth</label>
-                    <input class="form-control" id="employee_dob" name="employee_dob" type="date" value="{{ old('employee_dob', $employee->employee_dob) }}" required>
+                    <input class="form-control" id="employee_dob" name="employee_dob" type="date"
+                        value="{{ old('employee_dob', $employee->employee_dob ? \Carbon\Carbon::parse($employee->employee_dob)->format('Y-m-d') : '') }}"
+                        required>
                 </div>
             </div>
 

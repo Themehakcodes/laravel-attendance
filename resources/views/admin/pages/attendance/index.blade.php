@@ -69,10 +69,10 @@
                                         >H</button>
                                         <button 
                                             name="duration" 
-                                            value="leave" 
+                                            value="absent" 
                                             class="btn btn-danger btn-sm" 
                                             title="Absent"
-                                            @if($emp['attendance_details']?->duration === 'leave') disabled @endif
+                                            @if($emp['attendance_details']?->duration === 'absent') disabled @endif
                                         >A</button>
                                     </form>
                                 </td>

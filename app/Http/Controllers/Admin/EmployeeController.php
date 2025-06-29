@@ -130,6 +130,7 @@ class EmployeeController extends Controller
                 'user_id' => $this->generateUserId($request->employee_name),
                 'name' => $request->employee_name,
                 'email' => $request->employee_email,
+                'is_employee' => true,
                 'password' => bcrypt($request->employee_dob), // Set DOB as password
                 'role_id' => $role->id,
                 'user_status' => 'active',

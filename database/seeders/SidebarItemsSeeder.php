@@ -82,7 +82,61 @@ class SidebarItemsSeeder extends Seeder
                 'created_at' => '2025-04-14 09:28:41',
                 'updated_at' => '2025-04-14 09:28:41',
                 'deleted_at' => NULL,
+            ],
+            [
+                'id' => 7,
+                'item_name' => 'Attendance',
+                'item_route' => '/attendance/calandar',
+                'item_icon' => 'fas fa-calendar-check', // Font Awesome icon
+                'permission_title' => 'attendance_management_read',
+                'item_order' => 3,
+                'item_parent_id' => 0,
+                'created_at' => '2025-04-14 09:28:41',
+                'updated_at' => '2025-04-14 09:28:41',
+                'deleted_at' => NULL,
             ]
+            ,
+            [
+                'id' => 8,
+                'item_name' => 'Employee Attendance',
+                'item_route' => '/attendance',
+                'item_icon' => 'fas fa-calendar-check', // Font Awesome icon
+                'permission_title' => 'attendance_management_read',
+                'item_order' => 0,
+                'item_parent_id' => 7,
+                'created_at' => '2025-04-14 09:28:41',
+                'updated_at' => '2025-04-14 09:28:41',
+                'deleted_at' => NULL,
+            ],
+
+            [
+                'id' => 9,
+                  'item_name' => 'Attendance Mark',
+                'item_route' => '/attendance/calandar',
+                'item_icon' => 'fas fa-tachometer-alt', // Font Awesome icon
+                'permission_title' => 'dashboard_management_read',
+                'item_order' => 4,
+                'item_parent_id' => 7,
+                'created_at' => '2025-04-14 09:28:41',
+                'updated_at' => '2025-04-14 09:28:41',
+                'deleted_at' => NULL,
+            ],
+
+            [
+                'id' => 10,
+                'item_name' => 'Expenses',
+                'item_route' => '/expenses',
+                'item_icon' => 'fas fa-money-bill-wave', // Font Awesome icon
+                'permission_title' => 'employee_management_read',
+                'item_order' => 5,
+                'item_parent_id' => 0,
+                'created_at' => '2025-04-14 09:28:41',
+                'updated_at' => '2025-04-14 09:28:41',
+                'deleted_at' => NULL,
+            ],
+
+
+
         ];
 
         foreach ($items as $item) {
