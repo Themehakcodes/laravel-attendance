@@ -36,6 +36,7 @@ class AttendanceMarker extends Controller
 
     $employees = User::with('employeeProfile')
         ->where('is_employee', true)
+             ->orderBy('name') // Order alphabetically by name
         ->get()
         ->map(function ($user) use ($fromDate, $toDate, &$totalPresent, &$totalHalfDay, &$totalLeave, &$totalAbsent) {
             if ($user->employeeProfile && $user->employeeProfile->staff_status === 'active') {
@@ -100,9 +101,9 @@ class AttendanceMarker extends Controller
 
         $employees = User::with('employeeProfile')
             ->where('is_employee', true)
+            ->orderBy('name') // Order alphabetically by name
             ->get()
             ->map(function ($user) use ($date) {
-                
                 // Only include employees with staff_status = 'active'
                 if ($user->employeeProfile && $user->employeeProfile->staff_status === 'active') {
                     $attendance = EmployeeAttendance::whereDate('punch_in', $date)
