@@ -14,7 +14,7 @@ class EmployeeController extends Controller
     public function index()
   {
     // Fetch all employees from the database
-    $employees = EmployeeProfile::all();
+    $employees = EmployeeProfile::orderBy('employee_name')->get();
 
     // Return the view with the employees data
     return view('admin.pages.employees.index', compact('employees'));
