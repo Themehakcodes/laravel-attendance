@@ -35,7 +35,7 @@
             $label = match($duration) {
                 'full_time' => ['P', 'success', 'Present'],
                 'half_time' => ['H', 'warning', 'Half Time'],
-                'leave' => ['A', 'danger', 'Absent'],
+                'absent' => ['A', 'danger', 'Absent'],
                 default => ['?', 'secondary', 'Unknown'],
             };
         @endphp
