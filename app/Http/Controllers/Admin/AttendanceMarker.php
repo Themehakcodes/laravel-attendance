@@ -69,6 +69,7 @@ class AttendanceMarker extends Controller
                 $totalBalance = $user->employeeProfile->Totalbalance();
 
                 return [
+                    'employee_id' => $user->employeeProfile->employee_id ?? null,
                     'id' => $user->user_id,
                     'name' => $user->name,
                     'email' => $user->email,
