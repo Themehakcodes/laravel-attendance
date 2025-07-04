@@ -104,7 +104,12 @@
                         @forelse ($employees as $index => $emp)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $emp['name'] }}</td>
+                        <td>
+    <a href="{{ route('employee.profile.show', $emp['employee_id']) }}">
+        {{ $emp['name'] }}
+    </a>
+</td>
+
                                 <td>{{ $emp['email'] }}</td>
                                 <td>{{ $emp['profile']->department ?? '-' }}</td>
                                 <td><span class="badge bg-success">{{ $emp['present'] }}</span></td>
