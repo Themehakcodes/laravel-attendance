@@ -190,6 +190,22 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="entry_time">Entry Time</label>
+                        <input class="form-control" id="entry_time" name="entry_time" type="time" step="60"
+                            required>
+                        <small class="text-muted">Format: HH:MM</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="exit_time">Exit Time</label>
+                        <input class="form-control" id="exit_time" name="exit_time" type="time" step="60"
+                            required>
+                        <small class="text-muted">Format: HH:MM</small>
+                    </div>
+
+                </div>
+
                 <!-- Employee Status -->
                 <div class="row">
                     <div class="col-md-6 mb-3">

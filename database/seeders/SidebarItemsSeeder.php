@@ -134,6 +134,31 @@ class SidebarItemsSeeder extends Seeder
                 'updated_at' => '2025-04-14 09:28:41',
                 'deleted_at' => NULL,
             ],
+            [
+                'id' => 11,
+                'item_name' => 'Attendance Cards',
+                'item_route' => '/employee/attendancecards',
+                'item_icon' => 'fas fa-id-card', // Font Awesome icon
+                'permission_title' => 'print_management_read',
+                'item_order' => 7,
+                'item_parent_id' => 0,
+                'created_at' => '2025-04-14 09:28:41',
+                'updated_at' => '2025-04-14 09:28:41',
+                'deleted_at' => NULL,
+            ],
+
+            [
+                'id' => 12,
+                'item_name' => 'Barcode Attendance',
+                'item_route' => '/employee/cardattendance',
+             'item_icon' => 'fas fa-barcode', // Font Awesome icon
+                'permission_title' => 'attendance_management_read',
+                'item_order' => 7,
+                'item_parent_id' => 0,
+                'created_at' => '2025-04-14 09:28:41',
+                'updated_at' => '2025-04-14 09:28:41',
+                'deleted_at' => NULL,
+            ],
 
 
 
