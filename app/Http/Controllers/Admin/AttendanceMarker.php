@@ -172,91 +172,86 @@ class AttendanceMarker extends Controller
     {
         return view('admin.pages.attendance.cardattendance');
     }
-   public function markcardattendance(Request $request)
-{
-    $employeeId = $request->barcode;
 
-    $employee = EmployeeProfile::where('employee_id', $employeeId)->first();
-    if (!$employee) {
-        return back()->with('error', 'Employee not found.');
-    }
 
-    $userId = $employee->user_id;
-    $profileId = $employee->id;
+    public function markcardattendance(Request $request)
+    {
+        $employeeId = $request->barcode;
 
-    $now = Carbon::now('Asia/Kolkata'); // Apply Asian timezone here
-    $today = $now->copy()->startOfDay();
-
-    $attendance = EmployeeAttendance::where('user_id', $userId)
-        ->where('employee_profile_id', $profileId)
-        ->whereDate('punch_in', $today)
-        ->first();
-
-    // Get expected entry and exit as Carbon instances with same timezone
-    $entryTime = $employee->entry_time
-        ? Carbon::parse($employee->entry_time, 'Asia/Kolkata')->setDate($now->year, $now->month, $now->day)
-        : null;
-
-    $exitTime = $employee->exit_time
-        ? Carbon::parse($employee->exit_time, 'Asia/Kolkata')->setDate($now->year, $now->month, $now->day)
-        : null;
-
-    if (!$entryTime || !$exitTime) {
-        return back()->with('error', 'Employee shift time not set.');
-    }
-
-    $expectedDuration = $entryTime->diffInMinutes($exitTime);
-    $seventyFivePercent = floor($expectedDuration * 0.75);
-    $cutoffEntry = $entryTime->copy()->addMinutes($seventyFivePercent);
-
-    if ($attendance) {
-        $punchInTime = $attendance->punch_in;
-
-        $workedMinutes = $punchInTime->diffInMinutes($now);
-
-        $duration = 'full_time';
-        if ($workedMinutes < $seventyFivePercent) {
-            $duration = 'half_time';
+        $employee = EmployeeProfile::where('employee_id', $employeeId)->first();
+        if (!$employee) {
+            return back()->with('error', 'Employee not found.');
         }
 
-        $attendance->update([
-            'duration' => $duration,
-            'punch_out' => $now,
-            'attendance_location' => 'Admin Panel',
-            'verified' => true,
-            'gverified_by' => auth()->user()->user_id,
-        ]);
+        $userId = $employee->user->user_id;
+        $profileId = $employee->id;
 
-        return back()->with([
-            'success' => 'Punch-out recorded for ' . $employee->employee_name . ' (' . strtoupper($duration) . ')',
-            'employee' => $employee,
-            'time' => $punchInTime->format('h:i A'),
-            'punch_out' => $now->format('h:i A'),
-            'duration' => $duration,
-        ]);
-    } else {
-        $duration = 'full_time';
-        if ($now->gt($cutoffEntry)) {
-            $duration = 'half_time'; // Late punch-in
+        $now = Carbon::now('Asia/Kolkata'); // Apply Asian timezone here
+        $today = $now->copy()->startOfDay();
+
+        $attendance = EmployeeAttendance::where('user_id', $userId)->where('employee_profile_id', $profileId)->whereDate('punch_in', $today)->first();
+
+        // Get expected entry and exit as Carbon instances with same timezone
+        $entryTime = $employee->entry_time ? Carbon::parse($employee->entry_time, 'Asia/Kolkata')->setDate($now->year, $now->month, $now->day) : null;
+
+        $exitTime = $employee->exit_time ? Carbon::parse($employee->exit_time, 'Asia/Kolkata')->setDate($now->year, $now->month, $now->day) : null;
+
+        if (!$entryTime || !$exitTime) {
+            return back()->with('error', 'Employee shift time not set.');
         }
 
-        $attendance = EmployeeAttendance::create([
-            'user_id' => $userId,
-            'employee_profile_id' => $profileId,
-            'punch_in' => $now,
-            'duration' => $duration,
-            'attendance_location' => 'Admin Panel',
-            'verified' => true,
-            'gverified_by' => auth()->user()->user_id,
-        ]);
+        $expectedDuration = $entryTime->diffInMinutes($exitTime);
+        $seventyFivePercent = floor($expectedDuration * 0.75);
+        $cutoffEntry = $entryTime->copy()->addMinutes($seventyFivePercent);
 
-        return back()->with([
-            'success' => 'Punch-in recorded for ' . $employee->employee_name . ' (' . strtoupper($duration) . ')',
-            'employee' => $employee,
-            'time' => $now->format('h:i A'),
-            'punch_out' => null,
-            'duration' => $duration,
-        ]);
+        if ($attendance) {
+            $punchInTime = $attendance->punch_in;
+
+            $workedMinutes = $punchInTime->diffInMinutes($now);
+
+            $duration = 'full_time';
+            if ($workedMinutes < $seventyFivePercent) {
+                $duration = 'half_time';
+            }
+
+            $attendance->update([
+                'duration' => $duration,
+                'punch_out' => $now,
+                'attendance_location' => 'Admin Panel',
+                'verified' => true,
+                'gverified_by' => auth()->user()->user_id,
+            ]);
+
+            return back()->with([
+                'success' => 'Punch-out recorded for ' . $employee->employee_name . ' (' . strtoupper($duration) . ')',
+                'employee' => $employee,
+                'time' => $punchInTime->format('h:i A'),
+                'punch_out' => $now->format('h:i A'),
+                'duration' => $duration,
+            ]);
+        } else {
+            $duration = 'full_time';
+            if ($now->gt($cutoffEntry)) {
+                $duration = 'half_time'; // Late punch-in
+            }
+
+            $attendance = EmployeeAttendance::create([
+                'user_id' => $userId,
+                'employee_profile_id' => $profileId,
+                'punch_in' => $now,
+                'duration' => $duration,
+                'attendance_location' => 'Admin Panel',
+                'verified' => true,
+                'gverified_by' => auth()->user()->user_id,
+            ]);
+
+            return back()->with([
+                'success' => 'Punch-in recorded for ' . $employee->employee_name . ' (' . strtoupper($duration) . ')',
+                'employee' => $employee,
+                'time' => $now->format('h:i A'),
+                'punch_out' => null,
+                'duration' => $duration,
+            ]);
+        }
     }
-}
 }
