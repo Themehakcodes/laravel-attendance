@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\AttendanceMarker;
 use App\Http\Controllers\Admin\Usercontroller;
 use App\Http\Controllers\Admin\EmployeeExpenseController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\PrintController;
 use App\Http\Controllers\Admin\EmployeeProfileController;
 use App\Http\Controllers\Admin\PermissionsController;
 
@@ -68,6 +70,12 @@ Route::get('/attendance', [AttendanceMarker::class, 'index'])->name('attendance.
     Route::put('/expenses/{expense}', [EmployeeExpenseController::class, 'update'])->name('expenses.update');
     Route::patch('/expenses/{id}/mark-paid', [EmployeeExpenseController::class, 'markAsPaid'])->name('expenses.markAsPaid');
     Route::get('/employee/profile/{employee_id}', [EmployeeProfileController::class, 'show'])->name('employee.profile.show');
+
+    Route::get('/employee/attendancecards', [PrintController::class, 'attendancecards'])->name('employee.attendancecards');
+    Route::get('/attendance-card/{employee_id}', [PrintController::class, 'printSinglepreview'])->name('attendancecard.single.preview');
+    Route::get('/attendance-card/print/{employee_id}', [PrintController::class, 'printSingle'])->name('attendancecard.single');
+
+
 
 
 
