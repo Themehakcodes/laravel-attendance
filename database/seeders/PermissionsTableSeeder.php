@@ -18,6 +18,7 @@ class PermissionsTableSeeder extends Seeder
             'permission_management',
             'attendance_management',
             'print_management'
+        
             
         ];
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\AttendanceMarker;
 use App\Http\Controllers\Admin\Usercontroller;
 use App\Http\Controllers\Admin\EmployeeExpenseController;
+
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PrintController;
 use App\Http\Controllers\Admin\EmployeeProfileController;
@@ -74,6 +75,13 @@ Route::get('/attendance', [AttendanceMarker::class, 'index'])->name('attendance.
     Route::get('/employee/attendancecards', [PrintController::class, 'attendancecards'])->name('employee.attendancecards');
     Route::get('/attendance-card/{employee_id}', [PrintController::class, 'printSinglepreview'])->name('attendancecard.single.preview');
     Route::get('/attendance-card/print/{employee_id}', [PrintController::class, 'printSingle'])->name('attendancecard.single');
+
+    
+
+
+Route::get('/employee/cardattendance', [AttendanceMarker::class, 'attendanceCards'])->name('employee.attendance.attendanceCards');
+Route::post('/attendance/mark/cards', [AttendanceMarker::class, 'markcardattendance'])->name('attendance.mark.cards');
+
 
 
 

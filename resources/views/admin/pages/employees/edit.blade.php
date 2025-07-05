@@ -138,7 +138,18 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="joining_date">Joining Date</label>
-                    <input class="form-control" id="joining_date" name="joining_date" type="date" value="{{ old('joining_date', $employee->joining_date) }}" required>
+                    <input class="form-control" id="joining_date" name="joining_date" type="date" value="{{ old('joining_date', $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('Y-m-d') : '') }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="entry_time">Entry Time</label>
+                    <input class="form-control" id="entry_time" name="entry_time" type="time" value="{{ old('entry_time', $employee->entry_time ? \Carbon\Carbon::parse($employee->entry_time)->format('H:i') : '') }}" required pattern="^([01]\d|2[0-3]):([0-5]\d)$">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="exit_time">Exit Time</label>
+                    <input class="form-control" id="exit_time" name="exit_time" type="time" value="{{ old('exit_time', $employee->exit_time ? \Carbon\Carbon::parse($employee->exit_time)->format('H:i') : '') }}" required pattern="^([01]\d|2[0-3]):([0-5]\d)$">
                 </div>
             </div>
 
