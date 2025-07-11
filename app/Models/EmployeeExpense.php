@@ -12,6 +12,7 @@ class EmployeeExpense extends Model
         'type',
         'amount',
         'description',
+         'expense_date', // ← new
         'is_paid',
         'paid_at',
         'payment_method',
@@ -21,6 +22,7 @@ class EmployeeExpense extends Model
     protected $casts = [
         'is_paid' => 'boolean',
         'paid_at' => 'date',
+        'expense_date' => 'date', // ← new
     ];
 
     public function user()
