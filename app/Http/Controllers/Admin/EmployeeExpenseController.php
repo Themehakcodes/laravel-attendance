@@ -28,6 +28,7 @@ class EmployeeExpenseController extends Controller
     $request->validate([
         'employee_id' => 'required|exists:employee_profiles,id',
         'type' => 'required|string|in:advance,purchase,item,other',
+         'expense_date' => 'nullable|date',
         'amount' => 'required|numeric|min:0.01',
     ]);
 
@@ -38,6 +39,7 @@ class EmployeeExpenseController extends Controller
         'employee_id' => $employee->id,
         'type' => $request->type,
         'amount' => $request->amount,
+        'expense_date' => $request->expense_date ? $request->expense_date : now(),
         'description' => $request->description,
         'is_paid' => $request->is_paid ? true : false,
         'paid_at' => $request->is_paid ? now() : null,
@@ -56,6 +58,7 @@ public function update(Request $request, EmployeeExpense $expense)
         'amount' => 'required|numeric|min:0.01',
         'is_paid' => 'nullable|boolean',
         'payment_method' => 'nullable|string|max:255',
+        'expense_date' => 'nullable|date',
         'description' => 'nullable|string|max:1000',
         'notes' => 'nullable|string|max:1000',
     ]);
@@ -68,6 +71,7 @@ public function update(Request $request, EmployeeExpense $expense)
         'description' => $request->description,
         'notes' => $request->notes,
         'is_paid' => $request->is_paid ? true : false,
+        'expense_date' => $request->expense_date ? $request->expense_date : now(),
         'paid_at' => $request->is_paid ? now() : null,
         'payment_method' => $request->payment_method,
     ]);
