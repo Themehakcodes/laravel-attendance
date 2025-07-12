@@ -39,7 +39,7 @@
                 @forelse($employees as $index => $employee)
                     <tr>
                         <td>{{ $employees->firstItem() + $index }}</td>
-                        <td>{{ $employee->employee_id }}</td>
+                        <td>{{ $employee->user->user_id }}</td>
                         <td>{{ $employee->employee_name }}</td>
                         <td>{{ $employee->employee_phone_number }}</td>
                         <td>{{ $employee->department }}</td>

@@ -42,9 +42,7 @@ class AttendanceMarker extends Controller
             ->get()
             ->map(function ($user) use ($fromDate, $toDate, &$totalPresent, &$totalHalfDay, &$totalLeave, &$totalAbsent) {
                 if ($user->employeeProfile && $user->employeeProfile->staff_status === 'active') {
-                    $attendances = EmployeeAttendance::whereBetween('punch_in', [$fromDate->copy()->startOfDay(), $toDate->copy()->endOfDay()])
-                        ->where('user_id', $user->user_id)
-                        ->get();
+                    $attendances = EmployeeAttendance::whereDate('punch_in', '>=', $fromDate->toDateString())->whereDate('punch_in', '<=', $toDate->toDateString())->where('user_id', $user->user_id)->get();
 
                     $present = $attendances->where('duration', 'full_time')->count();
                     $halfDay = $attendances->where('duration', 'half_time')->count();
@@ -172,7 +170,6 @@ class AttendanceMarker extends Controller
     {
         return view('admin.pages.attendance.cardattendance');
     }
-
 
     public function markcardattendance(Request $request)
     {

@@ -266,11 +266,17 @@ public function saveFingerprint(Request $request)
 public function punchIn(Request $request)
 {
     $request->validate([
-        'employee_id' => 'required|exists:employee_profiles,employee_id',
+        'employee_id' => 'required|exists:users,user_id',
         'punch_in' => 'required|date_format:Y-m-d H:i:s', // Accept exact datetime format
     ]);
 
-    $employee = EmployeeProfile::where('employee_id', $request->employee_id)->first();
+    $user = User::where('user_id', $request->employee_id)->first();
+    
+    $userid = $user->id ?? null;
+
+    $employee = EmployeeProfile::where('user_id', $userid)->first();
+
+
 
     if (!$employee) {
         return response()->json(['error' => 'Employee not found'], 404);
@@ -289,12 +295,12 @@ public function punchIn(Request $request)
     }
 
     $attendance = new EmployeeAttendance();
-    $attendance->user_id = $employee->user_id;
+    $attendance->user_id = $employee->user->user_id; // Assuming user_id is the unique identifier for the user
     $attendance->employee_profile_id = $employee->id;
-    $attendance->punch_in = $punchInTime;
+    $attendance->punch_in = $punchInTime;    
     $attendance->duration = 'full_time';
     $attendance->verified = false;
-    $attendance->attendance_location = $request->get('location', null);
+    $attendance->attendance_location = $request->get('location', 'Fingerprint');
     $attendance->in_photo = $request->get('in_photo', null);
 
     $attendance->save();
@@ -306,15 +312,17 @@ public function punchIn(Request $request)
     ]);
 }
 
-
 public function punchOut(Request $request)
 {
     $request->validate([
-        'employee_id' => 'required|exists:employee_profiles,employee_id',
+        'employee_id' => 'required|exists:users,user_id',
         'punch_out' => 'required|date_format:Y-m-d H:i:s',
     ]);
 
-    $employee = EmployeeProfile::where('employee_id', $request->employee_id)->first();
+    $user = User::where('user_id', $request->employee_id)->first();
+    $userid = $user->id ?? null;
+
+    $employee = EmployeeProfile::where('user_id', $userid)->first();
 
     if (!$employee) {
         return response()->json(['error' => 'Employee not found'], 404);
@@ -345,5 +353,6 @@ public function punchOut(Request $request)
         'employee_name' => $employee->employee_name,
     ]);
 }
+
 
 }
