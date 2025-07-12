@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\EmployeeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +18,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('/save-fingerprint', [EmployeeController::class, 'saveFingerprint']);
+Route::post('/get-fingerprint', [EmployeeController::class, 'getFingerprintHashes']);
+Route::post('/punch-in', [EmployeeController::class, 'punchIn'])->name('employee.attendance.mark');
+Route::post('/punch-out', [EmployeeController::class, 'punchOut']);
