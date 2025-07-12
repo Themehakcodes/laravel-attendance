@@ -107,6 +107,8 @@ class AttendanceMarker extends Controller
                         'name' => $user->name,
                         'user_id' => $user->user_id,
                         'email' => $user->email,
+                        'punch_in' => $attendance ? $attendance->punch_in->format('h:i A') : null,
+                        'punch_out' => $attendance ? $attendance->punch_out ? $attendance->punch_out->format('h:i A') : null : null,
                         'employee_profile' => $user->employeeProfile,
                         'attendance_marked' => $attendance ? true : false,
                         'attendance_details' => $attendance,
