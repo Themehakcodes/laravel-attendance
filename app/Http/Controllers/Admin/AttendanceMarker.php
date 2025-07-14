@@ -123,14 +123,19 @@ class AttendanceMarker extends Controller
                     'updated_at' => now(),
                 ]);
             }
-            
         }
 
         // Now fetch all attendance info
         $employees = $activeEmployees
             ->sortBy('name')
             ->map(function ($user) use ($date) {
-                $attendance = EmployeeAttendance::whereDate('created_at', $date)->where('user_id', $user->user_id)->first();
+                $attendance = EmployeeAttendance::where(function ($query) use ($date) {
+                    $query->whereDate('attendance_date', $date)->orWhere(function ($q) use ($date) {
+                        $q->whereNull('attendance_date')->whereDate('created_at', $date);
+                    });
+                })
+                    ->where('user_id', $user->user_id)
+                    ->first();
 
                 return [
                     'name' => $user->name,
