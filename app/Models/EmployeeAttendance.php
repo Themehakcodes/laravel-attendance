@@ -15,7 +15,6 @@ class EmployeeAttendance extends Model
         'employee_profile_id',
         'punch_in',
         'punch_out',
-        'attendance_date',
         'duration',
         'in_photo',
         'out_photo',
