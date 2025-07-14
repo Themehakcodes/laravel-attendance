@@ -103,13 +103,14 @@ class AttendanceMarker extends Controller
             ->get();
 
         foreach ($activeEmployees as $employee) {
-            $alreadyExists = EmployeeAttendance::whereDate('created_at', $date)->where('user_id', $employee->user_id)->exists();
+            $alreadyExists = EmployeeAttendance::whereDate('attendance_date', $date)->where('user_id', $employee->user_id)->exists();
 
             if (!$alreadyExists) {
                 // Insert default absent entry
                 EmployeeAttendance::create([
                     'user_id' => $employee->user_id,
                     'employee_profile_id' => $employee->employeeProfile->id ?? null,
+                    'attendance_date' => $date,
                     'punch_in' => null,
                     'punch_out' => null,
                     'in_photo' => null,
@@ -122,6 +123,7 @@ class AttendanceMarker extends Controller
                     'updated_at' => now(),
                 ]);
             }
+            
         }
 
         // Now fetch all attendance info
@@ -164,7 +166,7 @@ class AttendanceMarker extends Controller
         $date = Carbon::parse($request->date)->startOfDay();
 
         // Check if attendance already exists for this user, profile, and date
-        $attendance = EmployeeAttendance::where('user_id', $userId)->where('employee_profile_id', $profileId)->whereDate('created_at', $date)->first();
+        $attendance = EmployeeAttendance::where('user_id', $userId)->where('employee_profile_id', $profileId)->whereDate('attendance_date', $date)->first();
 
         if ($attendance) {
             // Update existing attendance
@@ -211,7 +213,7 @@ class AttendanceMarker extends Controller
         $now = Carbon::now('Asia/Kolkata'); // Apply Asian timezone here
         $today = $now->copy()->startOfDay();
 
-        $attendance = EmployeeAttendance::where('user_id', $userId)->where('employee_profile_id', $profileId)->whereDate('punch_in', $today)->first();
+        $attendance = EmployeeAttendance::where('user_id', $userId)->where('employee_profile_id', $profileId)->whereDate('attendance_date', $today)->first();
 
         // Get expected entry and exit as Carbon instances with same timezone
         $entryTime = $employee->entry_time ? Carbon::parse($employee->entry_time, 'Asia/Kolkata')->setDate($now->year, $now->month, $now->day) : null;

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str; 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
@@ -19,13 +19,13 @@ use Illuminate\Support\Facades\Hash;
 class EmployeeController extends Controller
 {
     public function index()
-  {
-    // Fetch all employees from the database
-    $employees = EmployeeProfile::orderBy('employee_name')->get();
+    {
+        // Fetch all employees from the database
+        $employees = EmployeeProfile::orderBy('employee_name')->get();
 
-    // Return the view with the employees data
-    return view('admin.pages.employees.index', compact('employees'));
-  }
+        // Return the view with the employees data
+        return view('admin.pages.employees.index', compact('employees'));
+    }
 
     public function create()
     {
@@ -86,9 +86,6 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')->with('success', 'Employee updated successfully!');
     }
 
-
-
-
     public function store(Request $request)
     {
         // Basic validation except email uniqueness (we'll handle it manually)
@@ -117,8 +114,6 @@ class EmployeeController extends Controller
             'aadhaar_photo' => 'nullable|image|max:10240',
             'photo' => 'nullable|image|max:10240',
         ]);
-
-     
 
         // Check if the employee role exists
         $role = Role::firstOrCreate(['role_name' => 'employee'], ['description' => 'Employee Role']);
@@ -149,13 +144,9 @@ class EmployeeController extends Controller
         }
 
         // Handle file uploads
-        $aadhaarPhotoPath = $request->hasFile('aadhaar_photo')
-            ? $request->file('aadhaar_photo')->store('aadhaar_photos', 'public')
-            : null;
+        $aadhaarPhotoPath = $request->hasFile('aadhaar_photo') ? $request->file('aadhaar_photo')->store('aadhaar_photos', 'public') : null;
 
-        $photoPath = $request->hasFile('photo')
-            ? $request->file('photo')->store('profile_photos', 'public')
-            : null;
+        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('profile_photos', 'public') : null;
 
         // Generate Employee ID
         $prefix = strtoupper(substr(preg_replace('/\s+/', '', $request->employee_name), 0, 4));
@@ -208,8 +199,6 @@ class EmployeeController extends Controller
         return $prefix . $randomDigits;
     }
 
-
-
     //Employee Deactivate
 
     public function updatestatus(Request $request, $id)
@@ -220,139 +209,162 @@ class EmployeeController extends Controller
 
         return redirect()->route('employees.index')->with('success', 'Employee status updated successfully!');
     }
-public function saveFingerprint(Request $request)
-{
-    $request->validate([
-        'employee_id' => 'required|exists:employee_profiles,employee_id',
-        'fingerprint_hash_1' => 'nullable|string',
-        'fingerprint_hash_2' => 'nullable|string',
-    ]);
+    public function saveFingerprint(Request $request)
+    {
+        $request->validate([
+            'employee_id' => 'required|exists:employee_profiles,employee_id',
+            'fingerprint_hash_1' => 'nullable|string',
+            'fingerprint_hash_2' => 'nullable|string',
+        ]);
 
-    $employee = EmployeeProfile::where('employee_id', $request->employee_id)->first();
+        $employee = EmployeeProfile::where('employee_id', $request->employee_id)->first();
 
-    if (!$employee) {
-        return response()->json(['error' => 'Employee not found.'], 404);
+        if (!$employee) {
+            return response()->json(['error' => 'Employee not found.'], 404);
+        }
+
+        $employee->fingerprint_hash_1 = $request->fingerprint_hash_1;
+        $employee->fingerprint_hash_2 = $request->fingerprint_hash_2;
+        $employee->save();
+
+        return response()->json([
+            'message' => 'Fingerprint hashes saved successfully.',
+            'employee_id' => $employee->employee_id,
+        ]);
     }
 
-    $employee->fingerprint_hash_1 = $request->fingerprint_hash_1;
-    $employee->fingerprint_hash_2 = $request->fingerprint_hash_2;
-    $employee->save();
+    public function getFingerprintHashes(Request $request)
+    {
+        $request->validate([
+            'employee_id' => 'required|exists:employee_profiles,employee_id',
+        ]);
 
-    return response()->json([
-        'message' => 'Fingerprint hashes saved successfully.',
-        'employee_id' => $employee->employee_id,
-    ]);
-}
+        $employee = EmployeeProfile::where('employee_id', $request->employee_id)->first();
 
- public function getFingerprintHashes(Request $request)
-{
-    $request->validate([
-        'employee_id' => 'required|exists:employee_profiles,employee_id',
-    ]);
+        if (!$employee) {
+            return response()->json(['error' => 'Employee not found.'], 404);
+        }
 
-    $employee = EmployeeProfile::where('employee_id', $request->employee_id)->first();
-
-    if (!$employee) {
-        return response()->json(['error' => 'Employee not found.'], 404);
+        return response()->json([
+            'employee_id' => $employee->employee_id,
+            'fingerprint_hash_1' => $employee->fingerprint_hash_1,
+            'fingerprint_hash_2' => $employee->fingerprint_hash_2,
+        ]);
     }
 
-    return response()->json([
-        'employee_id' => $employee->employee_id,
-        'fingerprint_hash_1' => $employee->fingerprint_hash_1,
-        'fingerprint_hash_2' => $employee->fingerprint_hash_2,
-    ]);
-}
+    public function punchIn(Request $request)
+    {
+        $request->validate([
+            'employee_id' => 'required|exists:users,user_id',
+            'punch_in' => 'required|date_format:Y-m-d H:i:s',
+        ]);
 
-public function punchIn(Request $request)
-{
-    $request->validate([
-        'employee_id' => 'required|exists:users,user_id',
-        'punch_in' => 'required|date_format:Y-m-d H:i:s', // Accept exact datetime format
-    ]);
+        $user = User::where('user_id', $request->employee_id)->first();
+        $userid = $user->id ?? null;
 
-    $user = User::where('user_id', $request->employee_id)->first();
-    
-    $userid = $user->id ?? null;
+        $employee = EmployeeProfile::where('user_id', $userid)->first();
 
-    $employee = EmployeeProfile::where('user_id', $userid)->first();
+        if (!$employee) {
+            return response()->json(['error' => 'Employee not found'], 404);
+        }
 
+        $punchInTime = Carbon::parse($request->punch_in);
+        $attendanceDate = $punchInTime->toDateString();
 
+        // Check if an attendance entry already exists
+        $attendance = EmployeeAttendance::where('employee_profile_id', $employee->id)->where('attendance_date', $attendanceDate)->first();
 
-    if (!$employee) {
-        return response()->json(['error' => 'Employee not found'], 404);
+        if ($attendance) {
+            if ($attendance->punch_in) {
+                return response()->json([
+                    'message' => 'Already punched in for this date.',
+                    'employee_name' => $employee->employee_name,
+                    'already_punched' => true,
+                ]);
+            }
+
+            // If punch_in is still null, update it
+            $attendance->punch_in = $punchInTime;
+            $attendance->duration = 'full_time';
+            $attendance->verified = false;
+            $attendance->attendance_location = $request->get('location', 'Fingerprint');
+            $attendance->in_photo = $request->get('in_photo', null);
+            $attendance->save();
+
+            return response()->json([
+                'message' => 'Punch-in updated successfully.',
+                'punch_in_time' => $attendance->punch_in->toDateTimeString(),
+                'employee_name' => $employee->employee_name,
+                'updated' => true,
+            ]);
+        }
+
+        // No existing entry, create a new one
+        $attendance = new EmployeeAttendance();
+        $attendance->user_id = $employee->user->user_id;
+        $attendance->employee_profile_id = $employee->id;
+        $attendance->attendance_date = $attendanceDate; // ✅ THIS IS IMPORTANT
+        $attendance->punch_in = $punchInTime;
+        $attendance->duration = 'full_time';
+        $attendance->verified = true;
+        $attendance->attendance_location = $request->get('location', 'Fingerprint');
+        $attendance->in_photo = $request->get('in_photo', null);
+        $attendance->save();
+
+        return response()->json([
+            'message' => 'Punch-in recorded successfully.',
+            'punch_in_time' => $attendance->punch_in->toDateTimeString(),
+            'employee_name' => $employee->employee_name,
+            'created' => true,
+        ]);
     }
 
-    // Check if already punched in for the same date
-    $punchInTime = Carbon::parse($request->punch_in);
-    $attendanceDate = $punchInTime->toDateString();
+    public function punchOut(Request $request)
+    {
+        $request->validate([
+            'employee_id' => 'required|exists:users,user_id',
+            'punch_out' => 'required|date_format:Y-m-d H:i:s',
+        ]);
 
-    $alreadyPunched = EmployeeAttendance::where('employee_profile_id', $employee->id)
-        ->whereDate('punch_in', $attendanceDate)
-        ->first();
+        $user = User::where('user_id', $request->employee_id)->first();
+        $userid = $user->id ?? null;
 
-    if ($alreadyPunched) {
-        return response()->json(['message' => 'Already punched in for this date.'], 200);
+        $employee = EmployeeProfile::where('user_id', $userid)->first();
+
+        if (!$employee) {
+            return response()->json(['error' => 'Employee not found'], 404);
+        }
+
+        $punchOutTime = Carbon::parse($request->punch_out);
+        $attendanceDate = $punchOutTime->toDateString();
+
+        // Use new attendance_date field to find today's record
+        $attendance = EmployeeAttendance::where('employee_profile_id', $employee->id)->where('attendance_date', $attendanceDate)->first();
+
+        if (!$attendance) {
+            return response()->json(['error' => 'No attendance record found for this date.'], 404);
+        }
+
+        if ($attendance->punch_out) {
+            return response()->json(['message' => 'Already punched out for this date.'], 200);
+        }
+
+        $attendance->punch_out = $punchOutTime;
+        $attendance->out_photo = $request->get('out_photo', null);
+
+        // Calculate duration in minutes if punch_in is set
+        if ($attendance->punch_in) {
+            $diffInMinutes = $attendance->punch_in->diffInMinutes($punchOutTime);
+            $attendance->duration = 'full_time';
+        }
+
+        $attendance->save();
+
+        return response()->json([
+            'message' => 'Punch-out recorded successfully.',
+            'punch_out_time' => $attendance->punch_out->toDateTimeString(),
+            'duration_minutes' => $attendance->duration ?? null,
+            'employee_name' => $employee->employee_name,
+        ]);
     }
-
-    $attendance = new EmployeeAttendance();
-    $attendance->user_id = $employee->user->user_id; // Assuming user_id is the unique identifier for the user
-    $attendance->employee_profile_id = $employee->id;
-    $attendance->punch_in = $punchInTime;    
-    $attendance->duration = 'full_time';
-    $attendance->verified = false;
-    $attendance->attendance_location = $request->get('location', 'Fingerprint');
-    $attendance->in_photo = $request->get('in_photo', null);
-
-    $attendance->save();
-
-    return response()->json([
-        'message' => 'Punch-in recorded successfully.',
-        'punch_in_time' => $attendance->punch_in->toDateTimeString(),
-        'employee_name' => $employee->employee_name,
-    ]);
-}
-
-public function punchOut(Request $request)
-{
-    $request->validate([
-        'employee_id' => 'required|exists:users,user_id',
-        'punch_out' => 'required|date_format:Y-m-d H:i:s',
-    ]);
-
-    $user = User::where('user_id', $request->employee_id)->first();
-    $userid = $user->id ?? null;
-
-    $employee = EmployeeProfile::where('user_id', $userid)->first();
-
-    if (!$employee) {
-        return response()->json(['error' => 'Employee not found'], 404);
-    }
-
-    $punchOutTime = Carbon::parse($request->punch_out);
-    $attendanceDate = $punchOutTime->toDateString();
-
-    $attendance = EmployeeAttendance::where('employee_profile_id', $employee->id)
-        ->whereDate('punch_in', $attendanceDate)
-        ->first();
-
-    if (!$attendance) {
-        return response()->json(['error' => 'No punch-in record found for this date.'], 404);
-    }
-
-    if ($attendance->punch_out) {
-        return response()->json(['message' => 'Already punched out for this date.'], 200);
-    }
-
-    $attendance->punch_out = $punchOutTime;
-    $attendance->out_photo = $request->get('out_photo', null);
-    $attendance->save();
-
-    return response()->json([
-        'message' => 'Punch-out recorded successfully.',
-        'punch_out_time' => $attendance->punch_out->toDateTimeString(),
-        'employee_name' => $employee->employee_name,
-    ]);
-}
-
-
 }
