@@ -94,30 +94,53 @@ class AttendanceMarker extends Controller
         $date = Carbon::parse($selectedDate);
         $dayName = $date->format('l');
 
-        $employees = User::with('employeeProfile')
+        // Get active employees
+        $activeEmployees = User::with('employeeProfile')
             ->where('is_employee', true)
-            ->orderBy('name') // Order alphabetically by name
-            ->get()
-            ->map(function ($user) use ($date) {
-                // Only include employees with staff_status = 'active'
-                if ($user->employeeProfile && $user->employeeProfile->staff_status === 'active') {
-                    $attendance = EmployeeAttendance::whereDate('punch_in', $date)->where('user_id', $user->user_id)->first();
-
-                    return [
-                        'name' => $user->name,
-                        'user_id' => $user->user_id,
-                        'email' => $user->email,
-                        'punch_in' => $attendance ? $attendance->punch_in->format('h:i A') : null,
-                        'punch_out' => $attendance ? $attendance->punch_out ? $attendance->punch_out->format('h:i A') : null : null,
-                        'employee_profile' => $user->employeeProfile,
-                        'attendance_marked' => $attendance ? true : false,
-                        'attendance_details' => $attendance,
-                    ];
-                }
-                // Exclude employees who are not active
-                return null;
+            ->whereHas('employeeProfile', function ($q) {
+                $q->where('staff_status', 'active');
             })
-            ->filter()
+            ->get();
+
+        foreach ($activeEmployees as $employee) {
+            $alreadyExists = EmployeeAttendance::whereDate('created_at', $date)->where('user_id', $employee->user_id)->exists();
+
+            if (!$alreadyExists) {
+                // Insert default absent entry
+                EmployeeAttendance::create([
+                    'user_id' => $employee->user_id,
+                    'employee_profile_id' => $employee->employeeProfile->id ?? null,
+                    'punch_in' => null,
+                    'punch_out' => null,
+                    'in_photo' => null,
+                    'out_photo' => null,
+                    'attendance_location' => null,
+                    'verified' => 1,
+                    'gverified_by' => null,
+                    'duration' => 'absent',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        // Now fetch all attendance info
+        $employees = $activeEmployees
+            ->sortBy('name')
+            ->map(function ($user) use ($date) {
+                $attendance = EmployeeAttendance::whereDate('created_at', $date)->where('user_id', $user->user_id)->first();
+
+                return [
+                    'name' => $user->name,
+                    'user_id' => $user->user_id,
+                    'email' => $user->email,
+                    'punch_in' => $attendance?->punch_in?->format('h:i A'),
+                    'punch_out' => $attendance?->punch_out?->format('h:i A'),
+                    'employee_profile' => $user->employeeProfile,
+                    'attendance_marked' => (bool) $attendance,
+                    'attendance_details' => $attendance,
+                ];
+            })
             ->values();
 
         return view('admin.pages.attendance.index', [
@@ -141,7 +164,7 @@ class AttendanceMarker extends Controller
         $date = Carbon::parse($request->date)->startOfDay();
 
         // Check if attendance already exists for this user, profile, and date
-        $attendance = EmployeeAttendance::where('user_id', $userId)->where('employee_profile_id', $profileId)->whereDate('punch_in', $date)->first();
+        $attendance = EmployeeAttendance::where('user_id', $userId)->where('employee_profile_id', $profileId)->whereDate('created_at', $date)->first();
 
         if ($attendance) {
             // Update existing attendance
