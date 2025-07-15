@@ -52,14 +52,13 @@ class EmployeeProfileController extends Controller
                 return 'other';
             })
             ->countBy();
+
         $calendarEvents = EmployeeAttendance::where('employee_profile_id', $employee->id)
             ->whereBetween('punch_in', [$fromDate, $toDate])
             ->get()
-            ->groupBy(fn($record) => $record->punch_in->format('Y-m-d')) // ✅ Group by date
-            ->map(function ($recordsOfDay) {
-                // Pick highest-priority duration
+            ->groupBy(fn($record) => $record->punch_in->format('Y-m-d'))
+            ->map(function ($recordsOfDay) use ($employee) {
                 $durations = $recordsOfDay->pluck('duration')->unique();
-
                 $chosen = $recordsOfDay->first(); // fallback
 
                 if ($durations->contains('full_time')) {
@@ -72,27 +71,53 @@ class EmployeeProfileController extends Controller
                     $chosen = $recordsOfDay->firstWhere('duration', 'absent');
                 }
 
+                // ✅ Check for lateness based on entry_time
+                $entryTime = $employee->entry_time ?? '09:00:00'; // Format: '09:00'
+                $isLate = false;
+
+                if ($entryTime) {
+                    $entryTime = $employee->entry_time ?? '09:00:00';
+
+                    try {
+                        $scheduledEntry = Carbon::createFromFormat('H:i:s', $entryTime);
+                    } catch (\Exception $e) {
+                        // fallback if entry_time is invalid or missing
+                        $scheduledEntry = Carbon::createFromFormat('H:i:s', '09:00:00');
+                    }
+
+                    foreach ($recordsOfDay as $rec) {
+                        $actualTime = optional($rec->punch_in)->copy();
+                        if ($actualTime && $actualTime->gt($scheduledEntry->copy()->addMinutes(10))) {
+                            $isLate = true;
+                            break;
+                        }
+                    }
+                }
+
                 $punchInTime = optional($chosen->punch_in)->format('H:i');
                 $punchOutTime = optional($chosen->punch_out)->format('H:i');
 
                 return [
                     'title' => ucfirst(str_replace('_', ' ', $chosen->duration)) . " ({$punchInTime} - {$punchOutTime})",
                     'start' => $chosen->punch_in->format('Y-m-d'),
-                    'color' => match ($chosen->duration) {
-                        'full_time' => '#28a745',
-                        'half_time' => '#ffc107',
-                        'leave' => '#17a2b8',
-                        'absent' => '#dc3545',
-                        default => '#6c757d',
-                    },
+                    'color' => $isLate
+                        ? '#FF0000' // ⚠️ late = dark gray
+                        : match ($chosen->duration) {
+                            'full_time' => '#28a745',
+                            'half_time' => '#ffc107',
+                            'leave' => '#17a2b8',
+                            'absent' => '#dc3545',
+                            default => '#6c757d',
+                        },
                     'extendedProps' => [
                         'punch_in_time' => $punchInTime,
                         'punch_out_time' => $punchOutTime,
                         'duration' => $chosen->duration,
+                        'late' => $isLate,
                     ],
                 ];
             })
-            ->values(); // ✅ Reset keys (important for JSON/FullCalendar)
+            ->values();
 
         $thisMonthExpenses = $employee
             ->expenses()
@@ -123,8 +148,7 @@ class EmployeeProfileController extends Controller
             'totalExpenses' => $totalExpenses,
             'thisMonthExpenses' => $thisMonthExpenses,
             'defaultFrom' => $defaultFrom->format('Y-m-d'),
-'defaultTo' => $defaultTo->format('Y-m-d'),
-
+            'defaultTo' => $defaultTo->format('Y-m-d'),
             'previousexpenses' => $previousexpenses,
             'totalsallery' => $totalsallery,
             'present' => $attendanceStats['full_time'] ?? 0,
