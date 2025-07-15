@@ -69,6 +69,45 @@ public function expenses()
 {
     return $this->hasMany(EmployeeExpense::class, 'employee_id');
 }
+public function calculateFinalSalary($presentDays)
+{
+    $monthlySalary = $this->salary ?? 0;
+    $joiningDate = \Carbon\Carbon::parse($this->joining_date);
+    $today = now();
+
+    // Check if we are calculating for current month
+    $monthStart = $today->copy()->startOfMonth();
+    $monthEnd = $today->copy()->endOfMonth();
+
+    // If joined this month or later
+    if ($joiningDate->gt($monthStart)) {
+        // Total payable days = from joining to end of month
+        $totalPayableDays = $joiningDate->diffInDaysFiltered(function ($date) {
+            return !$date->isWeekend(); // optional: count only weekdays
+        }, $monthEnd) + 1; // +1 to include joining day
+
+        // Calculate per day salary based on only eligible days
+        $perDaySalary = $monthlySalary / 30;
+    } else {
+        $totalPayableDays = 30;
+        $perDaySalary = $monthlySalary / 30;
+    }
+
+    // Limit present days to max payable days
+    $adjustedPresentDays = min($presentDays, $totalPayableDays);
+
+    $earnedSalary = $perDaySalary * $adjustedPresentDays;
+
+    // Get total unpaid expenses
+    $unpaidExpenses = $this->expenses()->where('is_paid', false)->sum('amount');
+
+    // Final salary after deductions
+    $finalSalary = $earnedSalary - $unpaidExpenses;
+
+    return round($finalSalary, 2); // rounding for clean output
+}
+
+
 
 public function Totalbalance(){
     $earnedSalary = $this->calculateEarnedSalary(
