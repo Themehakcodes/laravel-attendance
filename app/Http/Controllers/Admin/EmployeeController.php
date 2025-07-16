@@ -18,14 +18,30 @@ use Illuminate\Support\Facades\Hash;
 
 class EmployeeController extends Controller
 {
-    public function index()
-    {
-        // Fetch all employees from the database
-        $employees = EmployeeProfile::orderBy('employee_name')->get();
+   public function index(Request $request)
+{
+    $search = $request->input('search');
+    $perPage = $request->input('per_page', 10);
+    $status = $request->input('staff_status');
 
-        // Return the view with the employees data
-        return view('admin.pages.employees.index', compact('employees'));
-    }
+    $employees = EmployeeProfile::when($search, function ($query, $search) {
+            $query->where('employee_name', 'like', '%' . $search . '%')
+                  ->orWhere('employee_id', 'like', '%' . $search . '%');
+        })
+        ->when($status && $status !== 'all', function ($query) use ($status) {
+            $query->where('staff_status', $status);
+        })
+        ->orderBy('employee_name')
+        ->paginate($perPage)
+        ->appends([
+            'search' => $search,
+            'per_page' => $perPage,
+            'staff_status' => $status
+        ]);
+
+    return view('admin.pages.employees.index', compact('employees', 'search', 'perPage', 'status'));
+}
+
 
     public function create()
     {
