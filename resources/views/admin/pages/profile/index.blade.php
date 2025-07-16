@@ -66,7 +66,7 @@
                         <div class="col-lg-7">
                             <div class="card shadow rounded-4 h-100">
                                 <div class="card-header bg-primary text-white fw-bold">
-                                    Employee Information
+                                    Employee Information {{ $employee->id }}
                                 </div>
                                 <div class="card-body p-3">
                                     <table class="table table-borderless mb-0">
@@ -151,7 +151,7 @@
                                         </a>
                                     @else
                                         {{-- Show Apply 30-Day Filter Button --}}
-                                        <form method="GET"
+                                          <form method="GET"
                                             action="{{ route('employee.profile.show', ['employee_id' => $employee->employee_id]) }}"
                                             class="mb-0">
                                             <input type="hidden" name="filter" value="custom">

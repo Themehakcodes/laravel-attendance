@@ -30,13 +30,15 @@ class EmployeeProfileController extends Controller
             $fromDate = $joiningDate;
         }
 
-        // ✅ Attendance Summary (one per day)
         $attendanceStats = EmployeeAttendance::where('employee_profile_id', $employee->id)
-            ->whereBetween('punch_in', [$fromDate, $toDate])
+            ->whereBetween('created_at', [$fromDate, $toDate]) // wide enough range
             ->get()
-            ->groupBy(fn($record) => $record->punch_in->format('Y-m-d'))
+            ->groupBy(function ($record) {
+                return optional($record->punch_in)?->format('Y-m-d') ?? (optional($record->attendance_date)?->format('Y-m-d') ?? optional($record->created_at)?->format('Y-m-d'));
+            })
             ->map(function ($dayRecords) {
                 $durations = $dayRecords->pluck('duration')->unique();
+
                 if ($durations->contains('full_time')) {
                     return 'full_time';
                 }
@@ -49,75 +51,79 @@ class EmployeeProfileController extends Controller
                 if ($durations->contains('absent')) {
                     return 'absent';
                 }
+
                 return 'other';
             })
             ->countBy();
+$calendarEvents = EmployeeAttendance::where('employee_profile_id', $employee->id)
+    ->whereBetween('created_at', [$fromDate, $toDate]) // fallback safe range
+    ->get()
+    ->groupBy(fn($record) =>
+        optional($record->punch_in)?->format('Y-m-d')
+        ?? optional($record->attendance_date)?->format('Y-m-d')
+        ?? optional($record->created_at)?->format('Y-m-d')
+    )
+    ->map(function ($recordsOfDay) use ($employee) {
+        $durations = $recordsOfDay->pluck('duration')->unique();
+        $chosen = $recordsOfDay->first(); // fallback
 
-        $calendarEvents = EmployeeAttendance::where('employee_profile_id', $employee->id)
-            ->whereBetween('punch_in', [$fromDate, $toDate])
-            ->get()
-            ->groupBy(fn($record) => $record->punch_in->format('Y-m-d'))
-            ->map(function ($recordsOfDay) use ($employee) {
-                $durations = $recordsOfDay->pluck('duration')->unique();
-                $chosen = $recordsOfDay->first(); // fallback
+        if ($durations->contains('full_time')) {
+            $chosen = $recordsOfDay->firstWhere('duration', 'full_time');
+        } elseif ($durations->contains('half_time')) {
+            $chosen = $recordsOfDay->firstWhere('duration', 'half_time');
+        } elseif ($durations->contains('leave')) {
+            $chosen = $recordsOfDay->firstWhere('duration', 'leave');
+        } elseif ($durations->contains('absent')) {
+            $chosen = $recordsOfDay->firstWhere('duration', 'absent');
+        }
 
-                if ($durations->contains('full_time')) {
-                    $chosen = $recordsOfDay->firstWhere('duration', 'full_time');
-                } elseif ($durations->contains('half_time')) {
-                    $chosen = $recordsOfDay->firstWhere('duration', 'half_time');
-                } elseif ($durations->contains('leave')) {
-                    $chosen = $recordsOfDay->firstWhere('duration', 'leave');
-                } elseif ($durations->contains('absent')) {
-                    $chosen = $recordsOfDay->firstWhere('duration', 'absent');
+        // ✅ Check for lateness
+        $entryTime = $employee->entry_time ?? '09:00:00';
+        $isLate = false;
+
+        if ($entryTime) {
+            try {
+                $scheduledEntry = Carbon::createFromFormat('H:i:s', $entryTime);
+            } catch (\Exception $e) {
+                $scheduledEntry = Carbon::createFromFormat('H:i:s', '09:00:00');
+            }
+
+            foreach ($recordsOfDay as $rec) {
+                $actualTime = optional($rec->punch_in)->copy();
+                if ($actualTime && $actualTime->gt($scheduledEntry->copy()->addMinutes(10))) {
+                    $isLate = true;
+                    break;
                 }
+            }
+        }
 
-                // ✅ Check for lateness based on entry_time
-                $entryTime = $employee->entry_time ?? '09:00:00'; // Format: '09:00'
-                $isLate = false;
+        $punchInTime = optional($chosen->punch_in)->format('H:i');
+        $punchOutTime = optional($chosen->punch_out)->format('H:i');
 
-                if ($entryTime) {
-                    $entryTime = $employee->entry_time ?? '09:00:00';
-
-                    try {
-                        $scheduledEntry = Carbon::createFromFormat('H:i:s', $entryTime);
-                    } catch (\Exception $e) {
-                        // fallback if entry_time is invalid or missing
-                        $scheduledEntry = Carbon::createFromFormat('H:i:s', '09:00:00');
-                    }
-
-                    foreach ($recordsOfDay as $rec) {
-                        $actualTime = optional($rec->punch_in)->copy();
-                        if ($actualTime && $actualTime->gt($scheduledEntry->copy()->addMinutes(10))) {
-                            $isLate = true;
-                            break;
-                        }
-                    }
-                }
-
-                $punchInTime = optional($chosen->punch_in)->format('H:i');
-                $punchOutTime = optional($chosen->punch_out)->format('H:i');
-
-                return [
-                    'title' => ucfirst(str_replace('_', ' ', $chosen->duration)) . " ({$punchInTime} - {$punchOutTime})",
-                    'start' => $chosen->punch_in->format('Y-m-d'),
-                    'color' => $isLate
-                        ? '#FF0000' // ⚠️ late = dark gray
-                        : match ($chosen->duration) {
-                            'full_time' => '#28a745',
-                            'half_time' => '#ffc107',
-                            'leave' => '#17a2b8',
-                            'absent' => '#dc3545',
-                            default => '#6c757d',
-                        },
-                    'extendedProps' => [
-                        'punch_in_time' => $punchInTime,
-                        'punch_out_time' => $punchOutTime,
-                        'duration' => $chosen->duration,
-                        'late' => $isLate,
-                    ],
-                ];
-            })
-            ->values();
+        return [
+            'title' => ucfirst(str_replace('_', ' ', $chosen->duration)) . " ({$punchInTime} - {$punchOutTime})",
+            'start' =>
+                optional($chosen->punch_in)?->format('Y-m-d')
+                ?? optional($chosen->attendance_date)?->format('Y-m-d')
+                ?? optional($chosen->created_at)?->format('Y-m-d'),
+            'color' => $isLate
+                ? '#FF0000'
+                : match ($chosen->duration) {
+                    'full_time' => '#28a745',
+                    'half_time' => '#ffc107',
+                    'leave' => '#17a2b8',
+                    'absent' => '#dc3545',
+                    default => '#6c757d',
+                },
+            'extendedProps' => [
+                'punch_in_time' => $punchInTime,
+                'punch_out_time' => $punchOutTime,
+                'duration' => $chosen->duration,
+                'late' => $isLate,
+            ],
+        ];
+    })
+    ->values();
 
         $thisMonthExpenses = $employee
             ->expenses()
