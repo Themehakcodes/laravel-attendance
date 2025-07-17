@@ -1,7 +1,4 @@
-import './bootstrap';
+import { createApp } from 'vue'
+import Dashboard from '../components/Dashboard.vue'
 
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-
-Alpine.start();
+createApp(Dashboard).mount('#app')
