@@ -120,7 +120,7 @@ public function todayAttendanceSummary(Request $request)
                 'user_id' => $employee->user_id,
                 'status'  => 'Leave',
             ];
-        } elseif (strtolower($attendance->duration) === 'half-day') {
+        } elseif (strtolower($attendance->duration) === 'half_time') {
             $halfDay[] = [
                 'name'      => $name,
                 'user_id'   => $employee->user_id,
