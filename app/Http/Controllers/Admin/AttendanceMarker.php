@@ -157,46 +157,59 @@ class AttendanceMarker extends Controller
         ]);
     }
 
-    public function mark(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|string',
-            'employee_profile_id' => 'required|integer|exists:employee_profiles,id',
-            'duration' => 'required|in:full_time,half_time,leave,absent',
-            'date' => 'required|date',
-        ]);
+public function mark(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required|string',
+        'employee_profile_id' => 'required|integer|exists:employee_profiles,id',
+        'duration' => 'required|in:full_time,half_time,leave,absent',
+        'date' => 'required|date',
+    ]);
 
-        $userId = $request->user_id;
-        $profileId = $request->employee_profile_id;
-        $date = Carbon::parse($request->date)->startOfDay();
+    $userId = $request->user_id;
+    $profileId = $request->employee_profile_id;
+    $date = Carbon::parse($request->date)->startOfDay();
+    $nowTime = now();
 
-        // Check if attendance already exists for this user, profile, and date
-        $attendance = EmployeeAttendance::where('user_id', $userId)->where('employee_profile_id', $profileId)->whereDate('attendance_date', $date)->first();
+    // Start building attendance data
+    $attendanceData = [
+        'user_id' => $userId,
+        'employee_profile_id' => $profileId,
+        'attendance_date' => $date,
+        'duration' => $request->duration,
+        'attendance_location' => 'Admin Panel',
+        'verified' => true,
+        'gverified_by' => auth()->user()->user_id,
+    ];
 
-        if ($attendance) {
-            // Update existing attendance
-            $attendance->update([
-                'duration' => $request->duration,
-                'attendance_location' => 'Admin Panel',
-                'verified' => true,
-                'gverified_by' => auth()->user()->user_id,
-                'punch_in' => $date->copy()->setTime(now()->hour, now()->minute),
-            ]);
-        } else {
-            // Create new attendance
-            EmployeeAttendance::create([
-                'user_id' => $userId,
-                'employee_profile_id' => $profileId,
-                'punch_in' => $date->copy()->setTime(now()->hour, now()->minute),
-                'duration' => $request->duration,
-                'attendance_location' => 'Admin Panel',
-                'verified' => true,
-                'gverified_by' => auth()->user()->user_id,
-            ]);
-        }
-
-        return back()->with('success', 'Attendance saved for ' . $userId);
+    // Add punch time only for present durations
+    if ($request->duration === 'full_time') {
+        $attendanceData['punch_in'] = $nowTime;
+        $attendanceData['punch_out'] = null;
+    } elseif ($request->duration === 'half_time') {
+        $attendanceData['punch_in'] = null;
+        $attendanceData['punch_out'] = $nowTime;
+    } else {
+        // For leave or absent – no punch time
+        $attendanceData['punch_in'] = null;
+        $attendanceData['punch_out'] = null;
     }
+
+    // Check for existing attendance
+    $attendance = EmployeeAttendance::where('user_id', $userId)
+        ->where('employee_profile_id', $profileId)
+        ->whereDate('attendance_date', $date)
+        ->first();
+
+    if ($attendance) {
+        $attendance->update($attendanceData);
+    } else {
+        EmployeeAttendance::create($attendanceData);
+    }
+
+    return back()->with('success', 'Attendance saved for ' . $userId);
+}
+
 
     public function attendanceCards()
     {
