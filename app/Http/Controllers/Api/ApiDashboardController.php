@@ -13,7 +13,6 @@ class ApiDashboardController extends Controller
     
   public function todayAttendance(Request $request)
 {
-    // Use today's date if not passed
     $date = $request->input('date') ?? Carbon::today()->toDateString();
 
     try {
@@ -25,10 +24,9 @@ class ApiDashboardController extends Controller
         ]);
     }
 
-    // Get all records where punch_in is not null, ordered by punch_in descending
-    $attendances = EmployeeAttendance::with(['employeeProfile'])
+    // Get all attendance records for the date (even if punch_in is null)
+    $attendances = EmployeeAttendance::with('employeeProfile')
         ->whereDate('attendance_date', $parsedDate)
-        ->whereNotNull('punch_in')
         ->orderByDesc('punch_in')
         ->get();
 
@@ -55,14 +53,14 @@ class ApiDashboardController extends Controller
         }
 
         return [
-            'name'          => $employee?->employee_name ?? 'Unknown',
-            'user_id'       => $record->user_id,
-            'punch_in'      => optional($record->punch_in)->format('h:i A'),
-            'punch_out'     => optional($record->punch_out)->format('h:i A'),
-            'status'        => $record->duration ?? 'Present',
-            'profile_id'    => $record->employee_profile_id,
-           'entry_time' => $employee->entry_time?->format('h:i A') ?? 'Not added',
-            'timing_status' => $timingStatus, // 👈 added this
+            'name'           => $employee?->employee_name ?? 'Unknown',
+            'user_id'        => $record->user_id,
+            'punch_in'       => optional($record->punch_in)->format('h:i A'),
+            'punch_out'      => optional($record->punch_out)->format('h:i A'),
+            'status'         => $record->duration ?? 'Not Marked',
+            'profile_id'     => $record->employee_profile_id,
+            'entry_time'     => $entryTime?->format('h:i A') ?? 'Not added',
+            'timing_status'  => $timingStatus,
         ];
     });
 
@@ -72,6 +70,7 @@ class ApiDashboardController extends Controller
         'data'    => $data
     ]);
 }
+
 
 
 public function todayAttendanceSummary(Request $request)
