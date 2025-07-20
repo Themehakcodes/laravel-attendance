@@ -156,7 +156,6 @@ class AttendanceMarker extends Controller
             'dayName' => $dayName,
         ]);
     }
-
 public function mark(Request $request)
 {
     $request->validate([
@@ -171,7 +170,7 @@ public function mark(Request $request)
     $date = Carbon::parse($request->date)->startOfDay();
     $nowTime = now();
 
-    // Start building attendance data
+    // Base attendance data
     $attendanceData = [
         'user_id' => $userId,
         'employee_profile_id' => $profileId,
@@ -182,20 +181,14 @@ public function mark(Request $request)
         'gverified_by' => auth()->user()->user_id,
     ];
 
-    // Add punch time only for present durations
+    // Conditionally add punch time
     if ($request->duration === 'full_time') {
         $attendanceData['punch_in'] = $nowTime;
-        $attendanceData['punch_out'] = null;
     } elseif ($request->duration === 'half_time') {
-        $attendanceData['punch_in'] = null;
         $attendanceData['punch_out'] = $nowTime;
-    } else {
-        // For leave or absent – no punch time
-        $attendanceData['punch_in'] = null;
-        $attendanceData['punch_out'] = null;
     }
 
-    // Check for existing attendance
+    // Update or create record
     $attendance = EmployeeAttendance::where('user_id', $userId)
         ->where('employee_profile_id', $profileId)
         ->whereDate('attendance_date', $date)
