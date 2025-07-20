@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Api\AdminLoginController;
+use App\Http\Controllers\Api\ApiDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +25,10 @@ Route::post('/save-fingerprint', [EmployeeController::class, 'saveFingerprint'])
 Route::post('/get-fingerprint', [EmployeeController::class, 'getFingerprintHashes']);
 Route::post('/punch-in', [EmployeeController::class, 'punchIn'])->name('employee.attendance.mark');
 Route::post('/punch-out', [EmployeeController::class, 'punchOut']);
+
+
+
+
+Route::post('/admin/login', [AdminLoginController::class, 'login']);
+Route::post('/admin/dashboard/today-attendance', [ApiDashboardController::class, 'todayAttendance']);
+Route::post('/admin/dashboard/today-summary', [ApiDashboardController::class, 'todayAttendanceSummary']);
