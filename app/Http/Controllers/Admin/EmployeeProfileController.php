@@ -24,17 +24,14 @@ class EmployeeProfileController extends Controller
             $toDate = Carbon::parse($request->input('to'))->endOfDay();
         }
 
-        // ✅ Ensure fromDate is not before joining date
-        $joiningDate = optional($employee->joining_date ?? $employee->created_at)->startOfDay();
-        if ($fromDate->lessThan($joiningDate)) {
-            $fromDate = $joiningDate;
-        }
+
+
 
         $attendanceStats = EmployeeAttendance::where('employee_profile_id', $employee->id)
-            ->whereBetween('created_at', [$fromDate, $toDate]) // wide enough range
+            ->whereBetween('attendance_date', [$fromDate, $toDate]) // wide enough range
             ->get()
             ->groupBy(function ($record) {
-                return optional($record->punch_in)?->format('Y-m-d') ?? (optional($record->attendance_date)?->format('Y-m-d') ?? optional($record->created_at)?->format('Y-m-d'));
+                return optional($record->attendance_date)?->format('Y-m-d') ?? (optional($record->punch_in)?->format('Y-m-d') ?? optional($record->created_at)?->format('Y-m-d'));
             })
             ->map(function ($dayRecords) {
                 $durations = $dayRecords->pluck('duration')->unique();
@@ -55,6 +52,8 @@ class EmployeeProfileController extends Controller
                 return 'other';
             })
             ->countBy();
+
+
         $calendarEvents = EmployeeAttendance::where('employee_profile_id', $employee->id)
             ->whereBetween('created_at', [$fromDate, $toDate]) // fallback safe range
             ->get()
