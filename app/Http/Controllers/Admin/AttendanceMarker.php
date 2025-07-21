@@ -150,6 +150,7 @@ class AttendanceMarker extends Controller
             })
             ->values();
 
+
         return view('admin.pages.attendance.index', [
             'employees' => $employees,
             'today' => $date->toDateString(),
