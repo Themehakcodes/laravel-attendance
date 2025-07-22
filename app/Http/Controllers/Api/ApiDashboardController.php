@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeAttendance;
+use App\Models\EmployeeExpense;
+use App\Models\EmployeeProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -158,4 +160,63 @@ public function todayAttendanceSummary(Request $request)
 }
 
 
+public function getAllEmployees(Request $request)
+{
+    $employees = User::with('employeeProfile')
+        ->where('is_employee', true)
+        ->whereHas('employeeProfile', function ($q) {
+            $q->where('staff_status', 'active');
+        })
+        ->get()
+        ->map(function ($user) {
+            $profile = $user->employeeProfile;
+
+            return [
+                'user_id'       => $user->user_id,
+                'name'          => $profile?->employee_name ?? $user->name,
+                'employee_id'   => $profile?->employee_id ?? 'N/A',
+                'job_title'     => $profile?->job_title ?? 'N/A',
+                'department'    => $profile?->department ?? 'N/A',
+                'salary'        => $profile?->salary ?? 0,
+                'entry_time'    => $profile?->entry_time?->format('h:i A') ?? null,
+                'status'        => $profile?->staff_status ?? 'unknown',
+            ];
+        });
+
+    return response()->json([
+        'status'  => 200,
+        'message' => 'Employee list fetched successfully.',
+        'data'    => $employees,
+    ]);
+}
+
+
+public function getEmployeeExpenses(Request $request)
+{
+    $expenses = EmployeeExpense::with(['user', 'employeeProfile'])
+        ->orderByDesc('expense_date')
+        ->get()
+        ->map(function ($expense) {
+            return [
+                'id'             => $expense->id,
+                'user_id'        => $expense->user_id,
+                'employee_id'    => $expense->employee_id,
+                'employee_name'  => $expense->employeeProfile?->employee_name ?? 'N/A',
+                'type'           => $expense->type,
+                'amount'         => $expense->amount,
+                'description'    => $expense->description,
+                'expense_date'   => optional($expense->expense_date)->format('Y-m-d'),
+                'is_paid'        => $expense->is_paid,
+                'paid_at'        => optional($expense->paid_at)->format('Y-m-d'),
+                'payment_method' => $expense->payment_method,
+                'notes'          => $expense->notes,
+            ];
+        });
+
+    return response()->json([
+        'status'  => 200,
+        'message' => 'All employee expenses fetched successfully.',
+        'data'    => $expenses,
+    ]);
+}
 }

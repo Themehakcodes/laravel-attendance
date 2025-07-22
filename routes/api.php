@@ -32,3 +32,5 @@ Route::post('/punch-out', [EmployeeController::class, 'punchOut']);
 Route::post('/admin/login', [AdminLoginController::class, 'login']);
 Route::post('/admin/dashboard/today-attendance', [ApiDashboardController::class, 'todayAttendance']);
 Route::post('/admin/dashboard/today-summary', [ApiDashboardController::class, 'todayAttendanceSummary']);
+Route::post('/admin/dashboard/employees', [ApiDashboardController::class, 'getAllEmployees']);
+Route::get('/admin/dashboard/employee-expenses', [ApiDashboardController::class, 'getEmployeeExpenses']);
