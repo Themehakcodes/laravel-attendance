@@ -87,4 +87,13 @@ public function markAsPaid($id)
     return back()->with('success', 'Expense marked as paid.');
 }
 
+
+public function destroy($id)
+{
+    $expense = EmployeeExpense::findOrFail($id);
+    $expense->delete();
+    return redirect()->back()->with('success', 'Expense deleted successfully.');
+}
+
+
 }

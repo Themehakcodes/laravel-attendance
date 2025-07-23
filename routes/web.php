@@ -69,6 +69,7 @@ Route::get('/attendance', [AttendanceMarker::class, 'index'])->name('attendance.
         Route::get('/expenses', [EmployeeExpenseController::class, 'index'])->name('expenses.index');
     Route::post('/expenses', [EmployeeExpenseController::class, 'store'])->name('expenses.store');
     Route::put('/expenses/{expense}', [EmployeeExpenseController::class, 'update'])->name('expenses.update');
+    Route::delete('/expenses/{id}', [EmployeeExpenseController::class, 'destroy'])->name('expenses.destroy');
     Route::patch('/expenses/{id}/mark-paid', [EmployeeExpenseController::class, 'markAsPaid'])->name('expenses.markAsPaid');
     Route::get('/employee/profile/{employee_id}', [EmployeeProfileController::class, 'show'])->name('employee.profile.show');
 

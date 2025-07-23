@@ -88,6 +88,13 @@
                                         data-bs-target="#editExpenseModal{{ $expense->id }}">
                                         Edit
                                     </button>
+                            
+                                        <form action="{{ route('expenses.destroy', $expense->id) }}" method="POST"
+                                            class="d-inline delete-expense-form" data-expense-id="{{ $expense->id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm btn-danger delete-expense-btn" data-expense-id="{{ $expense->id }}">Delete</button>
+                                        </form>
                                 </td>
                             </tr>
                         @empty
@@ -255,4 +262,49 @@
             });
         @endif
     </script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('#expenseModal form');
+    let submitted = false;
+
+    form.addEventListener('submit', function (e) {
+        if (submitted) {
+            e.preventDefault();
+        } else {
+            submitted = true;
+            // Optional: Disable the submit button
+            form.querySelector('button[type="submit"]').disabled = true;
+        }
+    });
+});
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.delete-expense-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const expenseId = this.getAttribute('data-expense-id');
+                const form = document.querySelector(`form.delete-expense-form[data-expense-id="${expenseId}"]`);
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This expense will be permanently deleted!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+
 @endsection
