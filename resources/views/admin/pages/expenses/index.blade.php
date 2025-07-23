@@ -264,21 +264,32 @@
     </script>
 
     <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('#expenseModal form');
-    let submitted = false;
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('#expenseModal form');
+        const submitBtn = form.querySelector('button[type="submit"], .btn-primary');
+        let submitted = false;
 
-    form.addEventListener('submit', function (e) {
-        if (submitted) {
-            e.preventDefault();
-        } else {
-            submitted = true;
-            // Optional: Disable the submit button
-            form.querySelector('button[type="submit"]').disabled = true;
-        }
+        form.addEventListener('submit', function (e) {
+            if (submitted) {
+                e.preventDefault();
+            } else {
+                submitted = true;
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = 'Saving...';
+                }
+                // Optional: Re-enable after 5 seconds if needed
+                setTimeout(() => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = 'Save Expense';
+                    }
+                    submitted = false;
+                }, 5000);
+            }
+        });
     });
-});
-</script>
+    </script>
 
 
 <script>
