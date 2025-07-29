@@ -18,16 +18,14 @@
                         <thead class="table-light">
                             <tr>
                                 <th>👤 Employee Name</th>
-
                                 <th>📋 Status</th>
-
                                 <th>✅ Mark</th>
-
                                 <th>Timing</th>
+                                <th>🔁 Punch</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($employees as $emp)
+                            @forelse ($employees as $index => $emp)
                                 <tr>
                                     <td>{{ $emp['name'] }}</td>
 
@@ -49,7 +47,6 @@
                                         @endif
                                     </td>
 
-
                                     <td>
                                         <form action="{{ route('attendance.mark') }}" method="POST" class="d-flex gap-1">
                                             @csrf
@@ -67,6 +64,7 @@
                                                 title="Absent" @if ($emp['attendance_details']?->duration === 'absent') disabled @endif>A</button>
                                         </form>
                                     </td>
+
                                     <td>
                                         @if ($emp['punch_in'])
                                             <span class="badge bg-success me-1">
@@ -91,8 +89,84 @@
                                         @endif
                                     </td>
 
+                                    <td>
+                                        <!-- Punch In Button -->
+                                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#punchInModal{{ $index }}">
+                                            IN
+                                        </button>
 
+                                        <!-- Punch Out Button -->
+                                        <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#punchOutModal{{ $index }}">
+                                            OUT
+                                        </button>
+                                    </td>
                                 </tr>
+
+                              <!-- Punch In Modal -->
+<div class="modal fade" id="punchInModal{{ $index }}" tabindex="-1" aria-labelledby="punchInLabel{{ $index }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{{ route('attendance.punchin') }}">
+            @csrf
+            <input type="hidden" name="user_id" value="{{ $emp['user_id'] }}">
+            <input type="hidden" name="employee_profile_id" value="{{ $emp['employee_profile']->id }}">
+            <input type="hidden" name="date" value="{{ request('date', $today) }}">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="punchInLabel{{ $index }}">Punch In - {{ $emp['name'] }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="punch_in_time{{ $index }}" class="form-label"><strong>Punch In Time:</strong></label>
+                        <input type="time" class="form-control" name="time" id="punch_in_time{{ $index }}" required value="{{ now()->format('H:i') }}">
+                    </div>
+                    <p><strong>Email:</strong> {{ $emp['employee_profile']->employee_email }}</p>
+                    <p><strong>Phone:</strong> {{ $emp['employee_profile']->employee_phone_number }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Confirm In</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+                                <!-- Punch Out Modal -->
+                               <!-- Punch Out Modal -->
+<div class="modal fade" id="punchOutModal{{ $index }}" tabindex="-1" aria-labelledby="punchOutLabel{{ $index }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{{ route('attendance.punchout') }}">
+            @csrf
+            <input type="hidden" name="user_id" value="{{ $emp['user_id'] }}">
+            <input type="hidden" name="employee_profile_id" value="{{ $emp['employee_profile']->id }}">
+            <input type="hidden" name="date" value="{{ request('date', $today) }}">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="punchOutLabel{{ $index }}">Punch Out - {{ $emp['name'] }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="punch_out_time{{ $index }}" class="form-label"><strong>Punch Out Time:</strong></label>
+                        <input type="time" class="form-control" name="time" id="punch_out_time{{ $index }}" required value="{{ now()->format('H:i') }}">
+                    </div>
+                    <p><strong>Email:</strong> {{ $emp['employee_profile']->employee_email }}</p>
+                    <p><strong>Phone:</strong> {{ $emp['employee_profile']->employee_phone_number }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Confirm Out</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
                             @empty
                                 <tr>
                                     <td colspan="7" class="text-center text-muted">No employee data available.</td>

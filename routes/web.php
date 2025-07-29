@@ -64,8 +64,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/employees/{id}/status', [EmployeeController::class, 'updatestatus'])->name('employees.updatestatus');
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
     Route::get('/attendance/calandar', [AttendanceMarker::class, 'calendar'])->name('attendance.calendar');
+    Route::post('/attendance/punchin', [AttendanceMarker::class, 'punchIn'])->name('attendance.punchin');
+Route::post('/attendance/punchout', [AttendanceMarker::class, 'punchOut'])->name('attendance.punchout');
+
 Route::get('/attendance', [AttendanceMarker::class, 'index'])->name('attendance.index');
     Route::post('/attendance/mark', [AttendanceMarker::class, 'mark'])->name('attendance.mark');
+
         Route::get('/expenses', [EmployeeExpenseController::class, 'index'])->name('expenses.index');
     Route::post('/expenses', [EmployeeExpenseController::class, 'store'])->name('expenses.store');
     Route::put('/expenses/{expense}', [EmployeeExpenseController::class, 'update'])->name('expenses.update');

@@ -157,6 +157,7 @@ class AttendanceMarker extends Controller
             'dayName' => $dayName,
         ]);
     }
+
 public function mark(Request $request)
 {
     $request->validate([
@@ -168,10 +169,14 @@ public function mark(Request $request)
 
     $userId = $request->user_id;
     $profileId = $request->employee_profile_id;
-    $date = Carbon::parse($request->date)->startOfDay();
-    $nowTime = now();
 
-    // Base attendance data
+    // Use start of the given date
+    $date = Carbon::parse($request->date)->startOfDay();
+
+    // Use time of now but with date from request
+    $currentTime = Carbon::now('Asia/Kolkata');
+    $timeToUse = $date->copy()->setTimeFrom($currentTime);  // Final datetime = requested date + current time
+
     $attendanceData = [
         'user_id' => $userId,
         'employee_profile_id' => $profileId,
@@ -182,14 +187,14 @@ public function mark(Request $request)
         'gverified_by' => auth()->user()->user_id,
     ];
 
-    // Conditionally add punch time
+    // Add punch_in or punch_out with correct datetime
     if ($request->duration === 'full_time') {
-        $attendanceData['punch_in'] = $nowTime;
+        $attendanceData['punch_in'] = $timeToUse;
     } elseif ($request->duration === 'half_time') {
-        $attendanceData['punch_out'] = $nowTime;
+        $attendanceData['punch_out'] = $timeToUse;
     }
 
-    // Update or create record
+    // Update or create
     $attendance = EmployeeAttendance::where('user_id', $userId)
         ->where('employee_profile_id', $profileId)
         ->whereDate('attendance_date', $date)
@@ -203,6 +208,7 @@ public function mark(Request $request)
 
     return back()->with('success', 'Attendance saved for ' . $userId);
 }
+
 
 
     public function attendanceCards()
@@ -290,4 +296,85 @@ public function mark(Request $request)
             ]);
         }
     }
+public function punchIn(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required|string',
+        'employee_profile_id' => 'required|integer|exists:employee_profiles,id',
+        'date' => 'required|date',
+    ]);
+
+    $userId = $request->user_id;
+    $profileId = $request->employee_profile_id;
+
+    $date = Carbon::parse($request->date)->startOfDay();
+    $currentTime = Carbon::now('Asia/Kolkata');
+    $punchInTime = $date->copy()->setTimeFrom($currentTime); // merge time with provided date
+
+    $attendance = EmployeeAttendance::where('user_id', $userId)
+        ->where('employee_profile_id', $profileId)
+        ->whereDate('attendance_date', $date)
+        ->first();
+
+    if ($attendance) {
+        $attendance->update([
+            'punch_in' => $punchInTime,
+            'attendance_location' => 'Admin Panel',
+            'verified' => true,
+            'duration' => 'full_time',
+            'gverified_by' => auth()->user()->user_id,
+        ]);
+    } else {
+        EmployeeAttendance::create([
+            'user_id' => $userId,
+            'employee_profile_id' => $profileId,
+            'attendance_date' => $date,
+            'duration' => 'full_time',
+            'punch_in' => $punchInTime,
+            'attendance_location' => 'Admin Panel',
+            'verified' => true,
+            'gverified_by' => auth()->user()->user_id,
+        ]);
+    }
+
+    return back()->with('success', 'Punch In recorded successfully.');
+}
+
+public function punchOut(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required|string',
+        'employee_profile_id' => 'required|integer|exists:employee_profiles,id',
+        'date' => 'required|date',
+    ]);
+
+    $userId = $request->user_id;
+    $profileId = $request->employee_profile_id;
+
+    $date = Carbon::parse($request->date)->startOfDay();
+    $currentTime = Carbon::now('Asia/Kolkata');
+    $punchOutTime = $date->copy()->setTimeFrom($currentTime); // merge time with provided date
+
+    $attendance = EmployeeAttendance::where('user_id', $userId)
+        ->where('employee_profile_id', $profileId)
+        ->whereDate('attendance_date', $date)
+        ->first();
+
+    if ($attendance) {
+        $attendance->update([
+            'punch_out' => $punchOutTime,
+            'attendance_location' => 'Admin Panel',
+            'verified' => true,
+            'duration' => 'full_time',
+            'gverified_by' => auth()->user()->user_id,
+        ]);
+
+        return back()->with('success', 'Punch Out recorded successfully.');
+    }
+
+    return back()->with('error', 'Attendance record not found for the selected date.');
+}
+
+
+
 }
