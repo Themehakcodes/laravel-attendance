@@ -104,66 +104,84 @@
                                     </td>
                                 </tr>
 
-                              <!-- Punch In Modal -->
-<div class="modal fade" id="punchInModal{{ $index }}" tabindex="-1" aria-labelledby="punchInLabel{{ $index }}" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form method="POST" action="{{ route('attendance.punchin') }}">
-            @csrf
-            <input type="hidden" name="user_id" value="{{ $emp['user_id'] }}">
-            <input type="hidden" name="employee_profile_id" value="{{ $emp['employee_profile']->id }}">
-            <input type="hidden" name="date" value="{{ request('date', $today) }}">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="punchInLabel{{ $index }}">Punch In - {{ $emp['name'] }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="punch_in_time{{ $index }}" class="form-label"><strong>Punch In Time:</strong></label>
-                        <input type="time" class="form-control" name="time" id="punch_in_time{{ $index }}" required value="{{ now()->format('H:i') }}">
-                    </div>
-                    <p><strong>Email:</strong> {{ $emp['employee_profile']->employee_email }}</p>
-                    <p><strong>Phone:</strong> {{ $emp['employee_profile']->employee_phone_number }}</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Confirm In</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
+                                <!-- Punch In Modal -->
+                                <div class="modal fade" id="punchInModal{{ $index }}" tabindex="-1"
+                                    aria-labelledby="punchInLabel{{ $index }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <form method="POST" action="{{ route('attendance.punchin') }}">
+                                            @csrf
+                                            <input type="hidden" name="user_id" value="{{ $emp['user_id'] }}">
+                                            <input type="hidden" name="employee_profile_id"
+                                                value="{{ $emp['employee_profile']->id }}">
+                                            <input type="hidden" name="date" value="{{ request('date', $today) }}">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-success text-white">
+                                                    <h5 class="modal-title" id="punchInLabel{{ $index }}">Punch In -
+                                                        {{ $emp['name'] }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="punch_in_time{{ $index }}"
+                                                            class="form-label"><strong>Punch In Time:</strong></label>
+                                                        <input type="time" class="form-control" name="time"
+                                                            id="punch_in_time{{ $index }}" required
+                                                            value="{{ now()->format('H:i') }}">
+                                                    </div>
+                                                    <p><strong>Email:</strong>
+                                                        {{ $emp['employee_profile']->employee_email }}</p>
+                                                    <p><strong>Phone:</strong>
+                                                        {{ $emp['employee_profile']->employee_phone_number }}</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-success">Confirm In</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
 
 
 
                                 <!-- Punch Out Modal -->
-                               <!-- Punch Out Modal -->
-<div class="modal fade" id="punchOutModal{{ $index }}" tabindex="-1" aria-labelledby="punchOutLabel{{ $index }}" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <form method="POST" action="{{ route('attendance.punchout') }}">
-            @csrf
-            <input type="hidden" name="user_id" value="{{ $emp['user_id'] }}">
-            <input type="hidden" name="employee_profile_id" value="{{ $emp['employee_profile']->id }}">
-            <input type="hidden" name="date" value="{{ request('date', $today) }}">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="punchOutLabel{{ $index }}">Punch Out - {{ $emp['name'] }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="punch_out_time{{ $index }}" class="form-label"><strong>Punch Out Time:</strong></label>
-                        <input type="time" class="form-control" name="time" id="punch_out_time{{ $index }}" required value="{{ now()->format('H:i') }}">
-                    </div>
-                    <p><strong>Email:</strong> {{ $emp['employee_profile']->employee_email }}</p>
-                    <p><strong>Phone:</strong> {{ $emp['employee_profile']->employee_phone_number }}</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-danger">Confirm Out</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
+                                <!-- Punch Out Modal -->
+                                <div class="modal fade" id="punchOutModal{{ $index }}" tabindex="-1"
+                                    aria-labelledby="punchOutLabel{{ $index }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <form method="POST" action="{{ route('attendance.punchout') }}">
+                                            @csrf
+                                            <input type="hidden" name="user_id" value="{{ $emp['user_id'] }}">
+                                            <input type="hidden" name="employee_profile_id"
+                                                value="{{ $emp['employee_profile']->id }}">
+                                            <input type="hidden" name="date" value="{{ request('date', $today) }}">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title" id="punchOutLabel{{ $index }}">Punch
+                                                        Out - {{ $emp['name'] }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="punch_out_time{{ $index }}"
+                                                            class="form-label"><strong>Punch Out Time:</strong></label>
+                                                        <input type="time" class="form-control" name="time"
+                                                            id="punch_out_time{{ $index }}" required
+                                                            value="{{ now()->format('H:i') }}">
+                                                    </div>
+                                                    <p><strong>Email:</strong>
+                                                        {{ $emp['employee_profile']->employee_email }}</p>
+                                                    <p><strong>Phone:</strong>
+                                                        {{ $emp['employee_profile']->employee_phone_number }}</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-danger">Confirm Out</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
 
 
 

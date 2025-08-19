@@ -164,8 +164,11 @@ public function mark(Request $request)
         'user_id' => 'required|string',
         'employee_profile_id' => 'required|integer|exists:employee_profiles,id',
         'duration' => 'required|in:full_time,half_time,leave,absent',
+        'time' => 'nullable|string',
         'date' => 'required|date',
     ]);
+
+   
 
     $userId = $request->user_id;
     $profileId = $request->employee_profile_id;
@@ -295,21 +298,28 @@ public function mark(Request $request)
                 'duration' => $duration,
             ]);
         }
-    }
-public function punchIn(Request $request)
+    }public function punchIn(Request $request)
 {
     $request->validate([
         'user_id' => 'required|string',
         'employee_profile_id' => 'required|integer|exists:employee_profiles,id',
         'date' => 'required|date',
+        'time' => 'nullable|date_format:H:i', // allow custom time (HH:MM)
     ]);
 
     $userId = $request->user_id;
     $profileId = $request->employee_profile_id;
 
     $date = Carbon::parse($request->date)->startOfDay();
-    $currentTime = Carbon::now('Asia/Kolkata');
-    $punchInTime = $date->copy()->setTimeFrom($currentTime); // merge time with provided date
+
+    // ✅ Use provided time if available, otherwise fallback to now
+    if ($request->filled('time')) {
+        [$hour, $minute] = explode(':', $request->time);
+        $punchInTime = $date->copy()->setTime($hour, $minute);
+    } else {
+        $currentTime = Carbon::now('Asia/Kolkata');
+        $punchInTime = $date->copy()->setTimeFrom($currentTime);
+    }
 
     $attendance = EmployeeAttendance::where('user_id', $userId)
         ->where('employee_profile_id', $profileId)
@@ -346,14 +356,22 @@ public function punchOut(Request $request)
         'user_id' => 'required|string',
         'employee_profile_id' => 'required|integer|exists:employee_profiles,id',
         'date' => 'required|date',
+        'time' => 'nullable|date_format:H:i', // allow optional time
     ]);
 
     $userId = $request->user_id;
     $profileId = $request->employee_profile_id;
 
     $date = Carbon::parse($request->date)->startOfDay();
-    $currentTime = Carbon::now('Asia/Kolkata');
-    $punchOutTime = $date->copy()->setTimeFrom($currentTime); // merge time with provided date
+
+    // ✅ Use provided time if available, otherwise fallback to current time
+    if ($request->filled('time')) {
+        [$hour, $minute] = explode(':', $request->time);
+        $punchOutTime = $date->copy()->setTime($hour, $minute);
+    } else {
+        $currentTime = Carbon::now('Asia/Kolkata');
+        $punchOutTime = $date->copy()->setTimeFrom($currentTime);
+    }
 
     $attendance = EmployeeAttendance::where('user_id', $userId)
         ->where('employee_profile_id', $profileId)
